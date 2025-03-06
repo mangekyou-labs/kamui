@@ -13,6 +13,10 @@ pub mod instruction;
 pub mod processor;
 pub mod state;
 pub mod mock_prover;
+pub mod example_consumer;
+
+#[cfg(feature = "mock")]
+pub mod vrf_server;
 
 entrypoint!(process_instruction);
 

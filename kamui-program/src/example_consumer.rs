@@ -5,31 +5,21 @@ use {
         entrypoint::ProgramResult,
         msg,
         program::{invoke, invoke_signed},
+        program_error::ProgramError,
         pubkey::Pubkey,
         system_instruction,
         system_program,
-        program_error::ProgramError,
         sysvar::{Sysvar, rent::Rent},
     },
     std::str::FromStr,
     crate::{
+        state::{RandomnessRequest, Subscription, VrfResult},
         instruction::VrfCoordinatorInstruction,
-        state::{VrfResult, Subscription},
     },
 };
 
 #[cfg(feature = "mock")]
-use {
-    solana_program::{
-        account_info::AccountInfo,
-        entrypoint::ProgramResult,
-        msg,
-        program::invoke,
-        pubkey::Pubkey,
-        system_program,
-    },
-    rand,
-};
+use rand;
 
 /// State for the game
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
@@ -71,6 +61,15 @@ pub enum GameInstruction {
     /// 1. `[]` VRF request account
     /// 2. `[writable]` Game state account
     ConsumeRandomness,
+}
+
+/// Custom error type for game operations
+#[derive(Debug)]
+pub enum GameError {
+    /// Invalid game state
+    InvalidGameState,
+    /// Invalid VRF result
+    InvalidVrfResult,
 }
 
 pub fn process_instruction(
