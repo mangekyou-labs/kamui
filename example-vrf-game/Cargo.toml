@@ -50,5 +50,4 @@ hex = "0.4"
 name = "mock-prover"
 path = "src/bin/mock_prover.rs"
 required-features = ["mock"]
-
 [workspace]

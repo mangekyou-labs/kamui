@@ -1,0 +1,316 @@
+[2025-03-21T09:50:20.479Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T09:50:20.481Z] INFO: Oracle keypair path: /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T09:50:20.481Z] INFO: VRF keypair path: /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T09:50:20.481Z] INFO: RPC URL: https://api.devnet.solana.com
+[2025-03-21T09:50:20.481Z] INFO: WebSocket URL: wss://api.devnet.solana.com
+[2025-03-21T09:50:20.481Z] INFO: Poll interval: 5000ms
+[2025-03-21T09:50:20.482Z] INFO: Oracle keypair found at /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T09:50:20.482Z] INFO: VRF keypair found at /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T09:50:22.301Z] ERROR: Rust VRF binary test failed: Command failed: cargo run --bin vrf_keypair_test -- --keypair /Users/zeref/workdir/mangekyou/vrf-keypair.json
+warning: Patch `curve25519-dalek v4.0.0-pre.0 (https://github.com/dalek-cryptography/curve25519-dalek?rev=127c9e9#127c9e90)` was not used in the crate graph.
+Patch `der v0.7.0 (https://github.com/RustCrypto/formats?rev=510b74a#510b74ad)` was not used in the crate graph.
+Check that the patched package version and available features are compatible
+with the dependency requirements. If the patch has a different version from
+what is locked in the Cargo.lock file, run `cargo update` to use the new
+version. This may also occur with an optional dependency that is not enabled.
+warning: unused import: `borrow::Borrow`
+  --> mangekyou/src/traits.rs:14:5
+   |
+14 |     borrow::Borrow,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `scalar::*`
+  --> mangekyou/src/kamui_vrf.rs:83:9
+   |
+83 |         scalar::*,
+   |         ^^^^^^^^^
+
+warning: function `to_custom_error` is never used
+  --> mangekyou/src/serde_helpers.rs:21:15
+   |
+21 | pub(crate) fn to_custom_error<'de, D, E>(e: E) -> D::Error
+   |               ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: constant `DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:133:11
+    |
+133 |     const DST: &[u8; 49] = b"ECVRF_ristretto255_XMD:SHA-512_R255MAP_RO_sol_vrf";
+    |           ^^^
+
+warning: constant `CHALLENGE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:136:11
+    |
+136 |     const CHALLENGE_GENERATION_DST: &[u8] = b"sol_vrf_challenge_generation";
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `NONCE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:137:11
+    |
+137 |     const NONCE_GENERATION_DST: &[u8] = b"sol_vrf_nonce_generation";
+    |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `HASH_POINTS_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:138:11
+    |
+138 |     const HASH_POINTS_DST: &[u8] = b"sol_vrf_hash_points";
+    |           ^^^^^^^^^^^^^^^
+
+warning: function `bytes_to_scalar` is never used
+   --> mangekyou/src/kamui_vrf.rs:513:8
+    |
+513 |     fn bytes_to_scalar(bytes: &[u8]) -> PodScalar {
+    |        ^^^^^^^^^^^^^^^
+
+warning: unused `Result` that must be used
+   --> mangekyou/src/kamui_vrf.rs:469:13
+    |
+469 |             self.c.serialize(&mut c_buffer);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+    = note: `#[warn(unused_must_use)]` on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+469 |             let _ = self.c.serialize(&mut c_buffer);
+    |             +++++++
+
+warning: `mangekyou` (lib) generated 9 warnings (run `cargo fix --lib -p mangekyou` to apply 2 suggestions)
+warning: unused imports: `debug`, `info`
+  --> vrf-server/src/vrf_server.rs:37:11
+   |
+37 |     log::{debug, error, info, trace, warn},
+   |           ^^^^^         ^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `ws_url`
+  --> vrf-server/src/vrf_server.rs:84:9
+   |
+84 |         ws_url: &str,
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_ws_url`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: `vrf-server` (lib) generated 2 warnings (run `cargo fix --lib -p vrf-server` to apply 2 suggestions)
+    Finished dev [unoptimized + debuginfo] target(s) in 1.37s
+     Running `/Users/zeref/workdir/mangekyou/target/debug/vrf_keypair_test --keypair /Users/zeref/workdir/mangekyou/vrf-keypair.json`
+thread 'main' panicked at mangekyou/src/kamui_vrf.rs:340:81:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Failed to generate proof: Any { .. }
+Keypair may be invalid or corrupted
+Error: "VRF keypair test failed - could not generate proof"
+
+[2025-03-21T09:55:46.346Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T09:55:46.347Z] INFO: Oracle keypair path: /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T09:55:46.347Z] INFO: VRF keypair path: /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T09:55:46.347Z] INFO: RPC URL: https://api.devnet.solana.com
+[2025-03-21T09:55:46.347Z] INFO: WebSocket URL: wss://api.devnet.solana.com
+[2025-03-21T09:55:46.348Z] INFO: Poll interval: 5000ms
+[2025-03-21T09:55:46.349Z] INFO: Oracle keypair found at /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T09:55:46.349Z] INFO: VRF keypair found at /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T09:55:47.645Z] ERROR: Rust VRF binary test failed: Command failed: cargo run --bin vrf_keypair_test -- --keypair /Users/zeref/workdir/mangekyou/vrf-keypair.json
+warning: Patch `curve25519-dalek v4.0.0-pre.0 (https://github.com/dalek-cryptography/curve25519-dalek?rev=127c9e9#127c9e90)` was not used in the crate graph.
+Patch `der v0.7.0 (https://github.com/RustCrypto/formats?rev=510b74a#510b74ad)` was not used in the crate graph.
+Check that the patched package version and available features are compatible
+with the dependency requirements. If the patch has a different version from
+what is locked in the Cargo.lock file, run `cargo update` to use the new
+version. This may also occur with an optional dependency that is not enabled.
+warning: unused import: `borrow::Borrow`
+  --> mangekyou/src/traits.rs:14:5
+   |
+14 |     borrow::Borrow,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `scalar::*`
+  --> mangekyou/src/kamui_vrf.rs:83:9
+   |
+83 |         scalar::*,
+   |         ^^^^^^^^^
+
+warning: function `to_custom_error` is never used
+  --> mangekyou/src/serde_helpers.rs:21:15
+   |
+21 | pub(crate) fn to_custom_error<'de, D, E>(e: E) -> D::Error
+   |               ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: constant `DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:133:11
+    |
+133 |     const DST: &[u8; 49] = b"ECVRF_ristretto255_XMD:SHA-512_R255MAP_RO_sol_vrf";
+    |           ^^^
+
+warning: constant `CHALLENGE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:136:11
+    |
+136 |     const CHALLENGE_GENERATION_DST: &[u8] = b"sol_vrf_challenge_generation";
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `NONCE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:137:11
+    |
+137 |     const NONCE_GENERATION_DST: &[u8] = b"sol_vrf_nonce_generation";
+    |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `HASH_POINTS_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:138:11
+    |
+138 |     const HASH_POINTS_DST: &[u8] = b"sol_vrf_hash_points";
+    |           ^^^^^^^^^^^^^^^
+
+warning: function `bytes_to_scalar` is never used
+   --> mangekyou/src/kamui_vrf.rs:513:8
+    |
+513 |     fn bytes_to_scalar(bytes: &[u8]) -> PodScalar {
+    |        ^^^^^^^^^^^^^^^
+
+warning: unused `Result` that must be used
+   --> mangekyou/src/kamui_vrf.rs:469:13
+    |
+469 |             self.c.serialize(&mut c_buffer);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+    = note: `#[warn(unused_must_use)]` on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+469 |             let _ = self.c.serialize(&mut c_buffer);
+    |             +++++++
+
+warning: `mangekyou` (lib) generated 9 warnings (run `cargo fix --lib -p mangekyou` to apply 2 suggestions)
+warning: unused imports: `debug`, `info`
+  --> vrf-server/src/vrf_server.rs:37:11
+   |
+37 |     log::{debug, error, info, trace, warn},
+   |           ^^^^^         ^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `ws_url`
+  --> vrf-server/src/vrf_server.rs:84:9
+   |
+84 |         ws_url: &str,
+   |         ^^^^^^ help: if this is intentional, prefix it with an underscore: `_ws_url`
+   |
+   = note: `#[warn(unused_variables)]` on by default
+
+warning: `vrf-server` (lib) generated 2 warnings (run `cargo fix --lib -p vrf-server` to apply 2 suggestions)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.70s
+     Running `/Users/zeref/workdir/mangekyou/target/debug/vrf_keypair_test --keypair /Users/zeref/workdir/mangekyou/vrf-keypair.json`
+thread 'main' panicked at mangekyou/src/kamui_vrf.rs:340:81:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Failed to generate proof: Any { .. }
+Keypair may be invalid or corrupted
+Error: "VRF keypair test failed - could not generate proof"
+
+[2025-03-21T09:58:41.524Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T09:59:40.802Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:00:29.790Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:01:34.465Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:03.484Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:03.485Z] INFO: Oracle keypair path: /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:03.485Z] INFO: VRF keypair path: /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T10:03:03.485Z] INFO: RPC URL: https://api.devnet.solana.com
+[2025-03-21T10:03:03.485Z] INFO: WebSocket URL: wss://api.devnet.solana.com
+[2025-03-21T10:03:03.485Z] INFO: Poll interval: 5000ms
+[2025-03-21T10:03:03.486Z] INFO: Oracle keypair found at /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:03.487Z] INFO: VRF keypair found at /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T10:03:03.487Z] INFO: Skipping ECVRF keypair test to focus on on-chain event retrieval
+[2025-03-21T10:03:03.487Z] INFO: Found 32-byte public key array in /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:03.487Z] INFO: Loaded public key: FujK9A4N4JKtELLEztxFx1L2obVjQJf93bmaytFLco7C
+[2025-03-21T10:03:03.488Z] WARN: ⚠️ DEVELOPMENT MODE: Using generated keypair with public key FujK9A4N4JKtELLEztxFx1L2obVjQJf93bmaytFLco7C
+[2025-03-21T10:03:03.488Z] WARN: ⚠️ WARNING: This keypair CAN'T SIGN transactions! Only for testing account reading.
+[2025-03-21T10:03:03.520Z] INFO: Generated random keypair with pubkey: 44E6f1LgD227mn5aNvPY1UzNo3FkGxincEMgpKBPozsc
+[2025-03-21T10:03:03.520Z] INFO: Oracle pubkey: 44E6f1LgD227mn5aNvPY1UzNo3FkGxincEMgpKBPozsc
+[2025-03-21T10:03:03.830Z] INFO: Oracle account balance: 0 SOL
+[2025-03-21T10:03:03.830Z] WARN: WARNING: Oracle account balance is too low. Please fund with at least 0.01 SOL
+[2025-03-21T10:03:03.831Z] WARN: Oracle account: 44E6f1LgD227mn5aNvPY1UzNo3FkGxincEMgpKBPozsc
+[2025-03-21T10:03:03.831Z] INFO: Starting VRF server polling...
+[2025-03-21T10:03:03.831Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:03.831Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:03.909Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:03.909Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:13.910Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:13.910Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:14.146Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:14.146Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:24.147Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:24.147Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:24.368Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:24.368Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:24.647Z] INFO: VRF server initialized with program ID: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:24.649Z] INFO: Oracle keypair path: /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:24.649Z] INFO: VRF keypair path: /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T10:03:24.649Z] INFO: RPC URL: https://api.devnet.solana.com
+[2025-03-21T10:03:24.649Z] INFO: WebSocket URL: wss://api.devnet.solana.com
+[2025-03-21T10:03:24.649Z] INFO: Poll interval: 5000ms
+[2025-03-21T10:03:24.650Z] INFO: Oracle keypair found at /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:24.651Z] INFO: VRF keypair found at /Users/zeref/workdir/mangekyou/vrf-keypair.json
+[2025-03-21T10:03:24.651Z] INFO: Skipping ECVRF keypair test to focus on on-chain event retrieval
+[2025-03-21T10:03:24.651Z] INFO: Found 32-byte public key array in /Users/zeref/workdir/mangekyou/oracle-keypair.json
+[2025-03-21T10:03:24.651Z] INFO: Loaded public key: FujK9A4N4JKtELLEztxFx1L2obVjQJf93bmaytFLco7C
+[2025-03-21T10:03:24.652Z] WARN: ⚠️ DEVELOPMENT MODE: Using generated keypair with public key FujK9A4N4JKtELLEztxFx1L2obVjQJf93bmaytFLco7C
+[2025-03-21T10:03:24.652Z] WARN: ⚠️ WARNING: This keypair CAN'T SIGN transactions! Only for testing account reading.
+[2025-03-21T10:03:24.684Z] INFO: Generated random keypair with pubkey: 5iPYf78tHjrbNTk2TABqdYhoS5EjSxGWqgLRSgv2HRtb
+[2025-03-21T10:03:24.684Z] INFO: Oracle pubkey: 5iPYf78tHjrbNTk2TABqdYhoS5EjSxGWqgLRSgv2HRtb
+[2025-03-21T10:03:24.970Z] INFO: Oracle account balance: 0 SOL
+[2025-03-21T10:03:24.970Z] WARN: WARNING: Oracle account balance is too low. Please fund with at least 0.01 SOL
+[2025-03-21T10:03:24.970Z] WARN: Oracle account: 5iPYf78tHjrbNTk2TABqdYhoS5EjSxGWqgLRSgv2HRtb
+[2025-03-21T10:03:24.970Z] INFO: Starting VRF server polling...
+[2025-03-21T10:03:24.970Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:24.970Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:25.046Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:25.047Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:34.370Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:34.371Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:34.603Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:34.603Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:35.048Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:35.048Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:35.277Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:35.277Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:44.605Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:44.605Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:44.884Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:44.884Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:45.278Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:45.278Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:45.490Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:45.490Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:54.884Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:54.884Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:55.115Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:55.115Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:55.491Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:03:55.491Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:03:58.431Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:03:58.431Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:05.116Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:04:05.117Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:04:05.333Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:05.333Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:08.433Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:04:08.433Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:04:08.658Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:08.658Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:15.333Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:04:15.334Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:04:15.566Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:15.566Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:18.659Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:04:18.660Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:04:25.566Z] INFO: Checking for pending VRF requests...
+[2025-03-21T10:04:25.567Z] INFO: Searching for accounts with REQUEST discriminator under program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+[2025-03-21T10:04:25.793Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:25.793Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:27.394Z] ERROR: Error in processPendingRequests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })
+[2025-03-21T10:04:27.394Z] ERROR: Error processing requests: failed to get accounts owned by program BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D: Invalid param: Base58DecodeError(InvalidCharacter { character: '=', index: 11 })

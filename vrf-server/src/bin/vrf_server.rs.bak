@@ -1,0 +1,313 @@
+use {
+    vrf_server::vrf_server::VRFServer,
+    solana_sdk::{
+        signature::{Keypair, read_keypair_file},
+        signer::Signer,
+    },
+    mangekyou::kamui_vrf::{
+        ecvrf::{ECVRFKeyPair},
+        VRFKeyPair,
+        VRFProof,
+    },
+    std::{
+        fs::{self, File},
+        io::{Read, Write},
+        error::Error,
+        path::Path,
+        str::FromStr,
+    },
+    tokio,
+    clap::{Arg, Command},
+    clap::App,
+    clap::SubCommand,
+    clap::Arg,
+    log::{debug, error, info, trace, warn},
+    rand::thread_rng,
+};
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Path to the oracle keypair file
+    #[arg(short, long, default_value = "oracle-keypair.json")]
+    keypair: String,
+
+    /// Path to the VRF keypair file
+    #[arg(short('v'), long, default_value = "vrf-keypair.json")]
+    vrf_keypair: String,
+
+    /// Program ID of the VRF coordinator
+    #[arg(short, long, default_value = "BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D")]
+    program_id: String,
+
+    /// RPC URL for the Solana network
+    #[arg(short, long, default_value = "https://api.devnet.solana.com")]
+    rpc_url: String,
+
+    /// WebSocket URL for the Solana network
+    #[arg(short, long, default_value = "wss://api.devnet.solana.com")]
+    ws_url: String,
+
+    /// Log level (info, debug, trace)
+    #[arg(short, long, default_value = "info")]
+    log_level: String,
+}
+
+fn load_or_create_oracle_keypair() -> Result<Keypair, Box<dyn Error>> {
+    let path = Path::new("oracle-keypair.json");
+    if path.exists() {
+        println!("Loading oracle keypair from {}", path.display());
+        match read_keypair_file(path) {
+            Ok(keypair) => {
+                println!("Successfully loaded oracle keypair: {}", keypair.pubkey());
+                Ok(keypair)
+            },
+            Err(e) => {
+                println!("Error loading oracle keypair: {}, generating new one", e);
+                let keypair = Keypair::new();
+                let keypair_bytes = keypair.to_bytes().to_vec();
+                let keypair_json = serde_json::to_string(&keypair_bytes)?;
+                fs::write(path, keypair_json)?;
+                println!("Generated new oracle keypair: {}", keypair.pubkey());
+                Ok(keypair)
+            }
+        }
+    } else {
+        println!("Oracle keypair file not found, generating new one");
+        let keypair = Keypair::new();
+        let keypair_bytes = keypair.to_bytes().to_vec();
+        let keypair_json = serde_json::to_string(&keypair_bytes)?;
+        fs::write(path, keypair_json)?;
+        println!("Generated new oracle keypair: {}", keypair.pubkey());
+        Ok(keypair)
+    }
+}
+
+fn load_or_create_vrf_keypair(keypair_path: &str) -> Result<ECVRFKeyPair, Box<dyn Error>> {
+    let path = Path::new(keypair_path);
+    if path.exists() {
+        println!("Loading VRF keypair from {}", path.display());
+        let mut file = File::open(path)?;
+        let mut keypair_bytes = Vec::new();
+        file.read_to_end(&mut keypair_bytes)?;
+        match ECVRFKeyPair::from_bytes(&keypair_bytes) {
+            Ok(keypair) => {
+                println!("Successfully loaded VRF keypair");
+                Ok(keypair)
+            }
+            Err(e) => {
+                println!("Error loading VRF keypair: {}", e);
+                println!("Generating new VRF keypair...");
+                let keypair = ECVRFKeyPair::generate(&mut thread_rng());
+                
+                // Save the keypair
+                let mut keypair_bytes = keypair.sk.as_ref().to_vec();
+                keypair_bytes.extend_from_slice(keypair.pk.as_ref());
+                let mut file = File::create(path)?;
+                file.write_all(&keypair_bytes)?;
+                
+                println!("New VRF keypair generated and saved to {}", path.display());
+                Ok(keypair)
+            }
+        }
+    } else {
+        println!("VRF keypair not found at {}, generating new one", path.display());
+        let keypair = ECVRFKeyPair::generate(&mut thread_rng());
+        
+        // Save the keypair
+        let mut keypair_bytes = keypair.sk.as_ref().to_vec();
+        keypair_bytes.extend_from_slice(keypair.pk.as_ref());
+        let mut file = File::create(path)?;
+        file.write_all(&keypair_bytes)?;
+        
+        println!("VRF keypair generated and saved to {}", path.display());
+        Ok(keypair)
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Create CLI app with subcommands
+    let matches = Command::new("Kamui VRF Server")
+        .version("1.0")
+        .author("Kamui Team")
+        .about("Server for VRF proofs")
+        .arg(
+            Arg::new("keypair")
+                .short('k')
+                .long("keypair")
+                .value_name("FILE")
+                .help("Path to the oracle keypair file")
+                .default_value("oracle-keypair.json")
+        )
+        .arg(
+            Arg::new("vrf-keypair")
+                .short('v')
+                .long("vrf-keypair")
+                .value_name("FILE")
+                .help("Path to the VRF keypair file")
+                .default_value("vrf-keypair.json")
+        )
+        .arg(
+            Arg::new("program-id")
+                .short('p')
+                .long("program-id")
+                .value_name("PUBKEY")
+                .help("Program ID of the VRF coordinator")
+                .default_value("BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D")
+        )
+        .arg(
+            Arg::new("rpc-url")
+                .short('r')
+                .long("rpc-url")
+                .value_name("URL")
+                .help("RPC URL for the Solana network")
+                .default_value("https://api.devnet.solana.com")
+        )
+        .arg(
+            Arg::new("ws-url")
+                .short('w')
+                .long("ws-url")
+                .value_name("URL")
+                .help("WebSocket URL for the Solana network")
+                .default_value("wss://api.devnet.solana.com")
+        )
+        .arg(
+            Arg::new("log-level")
+                .short('l')
+                .long("log-level")
+                .value_name("LEVEL")
+                .help("Log level (info, debug, trace)")
+                .default_value("info")
+        )
+        .subcommand(
+            Command::new("generate-keypair")
+                .about("Generate a new VRF keypair")
+                .arg(
+                    Arg::new("output")
+                        .short('o')
+                        .long("output")
+                        .value_name("FILE")
+                        .help("Output file for the keypair")
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("test-keypair")
+                .about("Test if a VRF keypair can safely generate proofs")
+                .arg(
+                    Arg::new("keypair")
+                        .long("keypair")
+                        .value_name("FILE")
+                        .help("VRF keypair file")
+                        .required(true)
+                )
+                .arg(
+                    Arg::new("message")
+                        .long("message")
+                        .value_name("STRING")
+                        .help("Test message to generate a proof for")
+                        .default_value("test")
+                )
+        )
+        .get_matches();
+
+    // Check for subcommands first
+    if let Some(matches) = matches.subcommand_matches("generate-keypair") {
+        let output_file = matches.get_one::<String>("output").unwrap();
+        let keypair = ECVRFKeyPair::generate(&mut thread_rng());
+        
+        // Manually create bytes since to_bytes() is not available
+        let mut bytes = keypair.sk.as_ref().to_vec();
+        bytes.extend_from_slice(keypair.pk.as_ref());
+        
+        println!("Generating new VRF keypair...");
+        let mut file = File::create(output_file)?;
+        file.write_all(&bytes)?;
+        println!("VRF keypair saved to: {}", output_file);
+        println!("Public key: {}", hex::encode(keypair.pk.as_ref()));
+        
+        return Ok(());
+    }
+    
+    if let Some(matches) = matches.subcommand_matches("test-keypair") {
+        let keypair_file = matches.get_one::<String>("keypair").unwrap();
+        let message = matches.get_one::<String>("message").unwrap().as_bytes();
+        
+        println!("Testing VRF keypair from file: {}", keypair_file);
+        
+        // Load the keypair
+        let vrf_keypair = load_or_create_vrf_keypair(keypair_file)?;
+        
+        // Try to generate a proof
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            vrf_keypair.prove(message)
+        }));
+        
+        match result {
+            Ok(proof) => {
+                // Using the VRFProof trait method to_hash()
+                let output = proof.to_hash();
+                println!("Successfully generated proof and output:");
+                println!("Output: {}", hex::encode(&output));
+                
+                // Using the VRFProof trait method to_bytes()
+                let proof_bytes = proof.to_bytes();
+                println!("Proof: {}", hex::encode(&proof_bytes));
+                println!("Keypair is valid and working correctly");
+                return Ok(());
+            },
+            Err(e) => {
+                eprintln!("Failed to generate proof: {:?}", e);
+                eprintln!("Keypair may be invalid or corrupted");
+                return Err("VRF keypair test failed - could not generate proof".into());
+            }
+        }
+    }
+
+    // Set up logging
+    match matches.get_one::<String>("log-level").map(|s| s.as_str()).unwrap_or("info") {
+        "debug" => std::env::set_var("RUST_LOG", "debug"),
+        "trace" => std::env::set_var("RUST_LOG", "trace"),
+        _ => std::env::set_var("RUST_LOG", "info"),
+    }
+    env_logger::init();
+
+    println!("Starting VRF oracle server...");
+
+    // Load or create keypairs
+    let keypair_path = matches.get_one::<String>("keypair").unwrap();
+    let vrf_keypair_path = matches.get_one::<String>("vrf-keypair").unwrap();
+    let program_id = matches.get_one::<String>("program-id").unwrap();
+    let rpc_url = matches.get_one::<String>("rpc-url").unwrap();
+    let ws_url = matches.get_one::<String>("ws-url").unwrap();
+
+    let oracle_keypair = read_keypair_file(keypair_path)?;
+    println!("Successfully loaded oracle keypair: {}", oracle_keypair.pubkey());
+    
+    let vrf_keypair = load_or_create_vrf_keypair(vrf_keypair_path)?;
+    println!("Loaded VRF keypair: {}", hex::encode(vrf_keypair.pk.as_ref()));
+
+    println!("Server initialized with:");
+    println!("Oracle pubkey: {}", oracle_keypair.pubkey());
+    println!("VRF pubkey: {}", hex::encode(vrf_keypair.pk.as_ref()));
+    println!("Program ID: {}", program_id);
+    println!("RPC URL: {}", rpc_url);
+    println!("WebSocket URL: {}", ws_url);
+
+    // Create VRF server
+    let server = VRFServer::new(
+        rpc_url,
+        program_id,
+        oracle_keypair,
+        vrf_keypair,
+    )?;
+
+    // Run the server
+    if let Err(e) = server.run(ws_url).await {
+        eprintln!("Server error: {}", e);
+        return Err(e.into());
+    }
+
+    Ok(())
+} 

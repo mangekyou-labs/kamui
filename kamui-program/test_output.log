@@ -1,0 +1,355 @@
+warning: Patch `curve25519-dalek v4.0.0-pre.0 (https://github.com/dalek-cryptography/curve25519-dalek?rev=127c9e9#127c9e90)` was not used in the crate graph.
+Patch `der v0.7.0 (https://github.com/RustCrypto/formats?rev=510b74a#510b74ad)` was not used in the crate graph.
+Check that the patched package version and available features are compatible
+with the dependency requirements. If the patch has a different version from
+what is locked in the Cargo.lock file, run `cargo update` to use the new
+version. This may also occur with an optional dependency that is not enabled.
+warning: unused variable: `request`
+   --> kamui-program/src/processor.rs:242:13
+    |
+242 |         let request = if request_data_len > 0 {
+    |             ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_request`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `minimum_confirmations`
+   --> kamui-program/src/processor.rs:209:9
+    |
+209 |         minimum_confirmations: u8,
+    |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_minimum_confirmations`
+
+warning: unused variable: `callback_program`
+   --> kamui-program/src/processor.rs:326:13
+    |
+326 |         let callback_program = next_account_info(accounts_iter)?;
+    |             ^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_callback_program`
+
+warning: unused variable: `game_state_bump`
+   --> kamui-program/src/processor.rs:429:30
+    |
+429 |         let (game_state_pda, game_state_bump) = Pubkey::find_program_address(
+    |                              ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_game_state_bump`
+
+warning: unused variable: `public_key`
+   --> kamui-program/src/processor.rs:320:9
+    |
+320 |         public_key: Vec<u8>,
+    |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_public_key`
+
+warning: unused variable: `subscription_balance`
+   --> kamui-program/src/processor.rs:467:13
+    |
+467 |         let subscription_balance = next_account_info(accounts_iter)?;
+    |             ^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_subscription_balance`
+
+warning: unused variable: `program_id`
+   --> kamui-program/src/processor.rs:552:9
+    |
+552 |         program_id: &Pubkey,
+    |         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_program_id`
+
+warning: `kamui-program` (lib) generated 7 warnings (run `cargo fix --lib -p kamui-program` to apply 7 suggestions)
+warning: unused import: `borrow::Borrow`
+  --> mangekyou/src/traits.rs:14:5
+   |
+14 |     borrow::Borrow,
+   |     ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `scalar::*`
+  --> mangekyou/src/kamui_vrf.rs:83:9
+   |
+83 |         scalar::*,
+   |         ^^^^^^^^^
+
+warning: function `to_custom_error` is never used
+  --> mangekyou/src/serde_helpers.rs:21:15
+   |
+21 | pub(crate) fn to_custom_error<'de, D, E>(e: E) -> D::Error
+   |               ^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: constant `DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:133:11
+    |
+133 |     const DST: &[u8; 49] = b"ECVRF_ristretto255_XMD:SHA-512_R255MAP_RO_...
+    |           ^^^
+
+warning: constant `CHALLENGE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:136:11
+    |
+136 |     const CHALLENGE_GENERATION_DST: &[u8] = b"sol_vrf_challenge_generat...
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `NONCE_GENERATION_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:137:11
+    |
+137 |     const NONCE_GENERATION_DST: &[u8] = b"sol_vrf_nonce_generation";
+    |           ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `HASH_POINTS_DST` is never used
+   --> mangekyou/src/kamui_vrf.rs:138:11
+    |
+138 |     const HASH_POINTS_DST: &[u8] = b"sol_vrf_hash_points";
+    |           ^^^^^^^^^^^^^^^
+
+warning: function `bytes_to_scalar` is never used
+   --> mangekyou/src/kamui_vrf.rs:513:8
+    |
+513 |     fn bytes_to_scalar(bytes: &[u8]) -> PodScalar {
+    |        ^^^^^^^^^^^^^^^
+
+warning: unused `Result` that must be used
+   --> mangekyou/src/kamui_vrf.rs:469:13
+    |
+469 |             self.c.serialize(&mut c_buffer);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: this `Result` may be an `Err` variant, which should be handled
+    = note: `#[warn(unused_must_use)]` on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+469 |             let _ = self.c.serialize(&mut c_buffer);
+    |             +++++++
+
+warning: `mangekyou` (lib) generated 9 warnings (run `cargo fix --lib -p mangekyou` to apply 2 suggestions)
+warning: unused imports: `Arc`, `ECVRFKeyPair`, `ECVRFProof`, `Mutex`, `VRFKeyPair`, `VRFProof`, `VerifyVrfInput`, `hex`, `rand::thread_rng`
+  --> kamui-program/tests/vrf_devnet_test.rs:4:50
+   |
+4  |         instruction::{VrfCoordinatorInstruction, VerifyVrfInput},
+   |                                                  ^^^^^^^^^^^^^^
+...
+26 |         ecvrf::{ECVRFKeyPair, ECVRFProof},
+   |                 ^^^^^^^^^^^^  ^^^^^^^^^^
+27 |         VRFProof,
+   |         ^^^^^^^^
+28 |         VRFKeyPair,
+   |         ^^^^^^^^^^
+29 |     },
+30 |     rand::thread_rng,
+   |     ^^^^^^^^^^^^^^^^
+31 |     anyhow::Result,
+32 |     std::{str::FromStr, fs::File, io::{Read, Write}, thread, time::Duration, sync::{Arc, Mutex}},
+   |                                                                                     ^^^  ^^^^^
+33 |     serde_json,
+34 |     hex,
+   |     ^^^
+   |
+   = note: `#[warn(unused_imports)]` on by default
+
+warning: unused variable: `vrf_verify_program_id`
+   --> kamui-program/tests/vrf_devnet_test.rs:247:9
+    |
+247 |     let vrf_verify_program_id = Pubkey::from_str("4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y").un...
+    |         ^^^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_vrf_verify_program_id`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `bump`
+   --> kamui-program/tests/vrf_devnet_test.rs:434:26
+    |
+434 |     let (game_state_pda, bump) = Pubkey::find_program_address(
+    |                          ^^^^ help: if this is intentional, prefix it with an underscore: `_bump`
+
+warning: unused variable: `err`
+   --> kamui-program/tests/vrf_devnet_test.rs:568:17
+    |
+568 |             Err(err) => {
+    |                 ^^^ help: if this is intentional, prefix it with an underscore: `_err`
+
+warning: `kamui-program` (test "vrf_devnet_test") generated 4 warnings (run `cargo fix --test "vrf_devnet_test"` to apply 4 suggestions)
+    Finished test [unoptimized + debuginfo] target(s) in 0.68s
+     Running tests/vrf_devnet_test.rs (/Users/zeref/workdir/mangekyou/target/debug/deps/vrf_devnet_test-316c77246c183580)
+
+running 1 test
+Starting VRF transaction monitor...
+Connecting to WebSocket at wss://api.devnet.solana.com
+WebSocket connected. Subscribing to logs for program: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+Successfully subscribed to program logs
+VRF transaction monitor is now running in the background
+VRF transaction monitor is ready
+VRF transaction monitor started successfully
+Using keypair with pubkey: H2L9sihpBDGuaUNT17vtQVB2Dk5MbwN5BgSFr32zwVDi
+Current balance: 1.52980612 SOL
+
+=== Sending test transaction to check WebSocket monitoring ===
+Sending memo transaction with data: TEST TX FOR VRF PROGRAM: BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: NLnu6fp6e7bP6eq12LMYGANGjBbjHQCKC6XA3yY4Gij7eAPSQRbWyKgEEHVDQDzWAokEZHuWwSCXkZehPwcorsk
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: CreateSubscription - min_balance: 100000, confirmations: 1
+LOG: Program log: VRF Coordinator: Creating subscription...
+LOG: Program log: VRF Coordinator: Subscription owner: 6AwssMgw1s2bL51cn3DDGswCFH47Kf9GJULNy5Tazhh5
+LOG: Program log: VRF Coordinator: Subscription account: H66N7id77Lu86hiQLqG1tTzPq7DU27x4cU9PZWgzy2pe
+LOG: Program log: VRF Coordinator: Creating subscription account - space: 65, lamports: 1343280
+LOG: Program log: VRF_EVENT:Au8I9cTlWRl83BO67QDTE/q22kH812ASWC8U8cP4niPfTNa2KgC534jTL8EvTzYD/R5woTmK5ZWXPLfClzI5FuyghgEAAAAAAA==
+====================================================
+
+Test transaction sent! Signature: 459fqnEs7S5dx8VH3rQjctZiLt8oPKkCQPWVNFXVXYC3ynxwE2CNfcNFLon3gipAH9rnrANXr6xpvXVjmrxeM763
+If WebSocket monitoring is working, you should see this transaction in the logs
+Waiting 5 seconds to allow transaction to propagate...
+
+=== Sending direct test transaction to VRF program ===
+Sending test transaction to VRF program (will fail with invalid instruction)
+Test transaction failed as expected: RPC response error -32002: Transaction simulation failed: Error processing Instruction 0: invalid instruction data [5 log messages]
+This is normal since we sent an invalid instruction
+Checking if the transaction was still visible to the WebSocket monitor...
+Creating VRF subscription...
+Funding subscription owner account...
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: 2kHvJqMbQg8TaLPifXaciLpGcBoTximkJHDBN2c4b8gKgyj5WE8J8JnZSh4W2oMijGhJzqwdZJ6tdi93RbJdf4nR
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: FundSubscription - amount: 1000000
+LOG: Program log: VRF_EVENT:A+8I9cTlWRl83BO67QDTE/q22kH812ASWC8U8cP4niPfTNa2KgC534jTL8EvTzYD/R5woTmK5ZWXPLfClzI5FuxAQg8AAAAAAA==
+====================================================
+
+Subscription owner funded successfully with 0.005 SOL!
+Sending transaction to create subscription...
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: 2q8xJgxZJDnjjUNrvJ9qRJvEFEpxq2V8gJt56dYQk8actXWdBxQcAn8Pn65fVhCpNioEjxgnXPSGUzBPA2DDTvVg
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: CreateSubscription - min_balance: 100000, confirmations: 1
+LOG: Program log: VRF Coordinator: Creating subscription...
+LOG: Program log: VRF Coordinator: Subscription owner: 548BGLveXxkfuYofXewB91NYVvrMxztW6AkyQyLpQEAi
+LOG: Program log: VRF Coordinator: Subscription account: D91W4TrbtzmJtyeaoZh9TU4H2UTPKJrrzuPBVRbU88Pt
+LOG: Program log: VRF Coordinator: Creating subscription account - space: 65, lamports: 1343280
+LOG: Program log: VRF_EVENT:ArRZdMNFr95rLVaE62rSooZ9YI6bbCte+7XEKFNUI8IzPDua7Adlr7a5pgIEn6Zs91Ci5GTibnJXV8HJ2TTdSO+ghgEAAAAAAA==
+====================================================
+
+Subscription created! Signature: 2q8xJgxZJDnjjUNrvJ9qRJvEFEpxq2V8gJt56dYQk8actXWdBxQcAn8Pn65fVhCpNioEjxgnXPSGUzBPA2DDTvVg
+Creating token accounts...
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: 5wpWTX4tkvpNHdJN4iBrxadVi5nBAYWouCub4r41eVu38CFeyq4NYXNpJ4rWMYgJVXFaKVUe8EiYvhYMgLKhSbBQ
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: RequestRandomness - seed: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], num_words: 1, min_confirmations: 1, gas_limit: 100000
+LOG: Program log: VRF_EVENT:AKrCRRYYRf2BYUERI1sN5Mhmp5RhNeIuHolNmU49KIdS+Gw2wv8H8HBiRWuhTtHJhbPSYj/k3R3sHHdNddIHojvvCPXE5VkZfNwTuu0A0xP6ttpB/NdgElgvFPHD+J4j3wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+====================================================
+
+Token accounts created! Signature: 4wempMAakbizuyEuyQdXJXHXvDoGnXWUNnwzXsY1jFMnewsL738mMu5ELshNUDEZV8SZ2XqjDVdmS5m3ZHKdHAD6
+Wrapping SOL...
+SOL wrapped! Signature: 5YSnNcB3mWJ8r794hiybHv3GCx53x15ytGy8X1ESrUDMKUDrr4YptWRyt4qaGhcgJYrgPeT4Ue7xsQqTzadNTVR5
+Funding subscription...
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: fiTR4TQ9piSJ7uMEVPUcoMZkojsnjk82H5NwE4QfJo6psUN69XR9W24U8PU5DFLPvdSHqtoiVzR9KQui2rfwetH
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: FundSubscription - amount: 1000000
+LOG: Program log: VRF_EVENT:A7RZdMNFr95rLVaE62rSooZ9YI6bbCte+7XEKFNUI8IzPDua7Adlr7a5pgIEn6Zs91Ci5GTibnJXV8HJ2TTdSO9AQg8AAAAAAA==
+====================================================
+
+Subscription funded! Signature: fiTR4TQ9piSJ7uMEVPUcoMZkojsnjk82H5NwE4QfJo6psUN69XR9W24U8PU5DFLPvdSHqtoiVzR9KQui2rfwetH
+Initializing game...
+Initializing game state...
+test test_vrf_flow_devnet has been running for over 60 seconds
+Game initialized! Signature: 2bnGbkwVbMXHu2NoiDTfFMU1vSfJUGn9QShjK9LzihyYY8KVoQ6BXkVL8h5cgryxM9HEUZE6sF9fUuFtbgKwonvX
+
+=== Starting VRF Cost Analysis ===
+Initial payer balance: 1.47370716 SOL
+Initial game owner balance: 0.02 SOL
+
+1. Requesting random number...
+Requesting random number...
+
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: 3pKn7TJJqFvzFMaHkmWAvnQ61WZr2jLdEGPKyRbpKjoP2RejDvt6EQ2jZ1e4Zvz6719rV9rGfCKet3pLC9emnuwS
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: RequestRandomness - seed: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], num_words: 1, min_confirmations: 1, gas_limit: 100000
+LOG: Program log: VRF_EVENT:AHsifYFaNdetNdQs8CWzyKnIgsMG2mAUDsJfO3GKyjQhm3iJg7hZZz5FlSk1JIzdOuAnyHhIABRfIjMtittsHsW0WXTDRa/eay1WhOtq0qKGfWCOm2wrXvu1xChTVCPCMwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+====================================================
+
+Random number requested! Signature: 3pKn7TJJqFvzFMaHkmWAvnQ61WZr2jLdEGPKyRbpKjoP2RejDvt6EQ2jZ1e4Zvz6719rV9rGfCKet3pLC9emnuwS
+Request cost: 0.00208408 SOL
+
+2. Waiting for VRF server to fulfill randomness...
+VRF result PDA: 3DP9i3tQUpaQ1SgLhSTJznDJ9cwneY4vn87WaMGRT8LX
+Request account: 9HfeiD7nqf8saMFYvacHLHnrTEnWoZrtoTK8BAMV3qVz
+Subscription account: D91W4TrbtzmJtyeaoZh9TU4H2UTPKJrrzuPBVRbU88Pt
+Game owner (requester): BTtoDYqEmcwC7QoiyPtU5FHXDoYr37XKYQg8RvxBsic4
+Game state PDA: 4E1q9owY7RAiXs46KuMgTXaYwYGMLbUFk6RT5wQJaFez
+Waiting for the VRF server to fulfill the request...
+Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 0 seconds, 60 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 5 seconds, 55 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 10 seconds, 50 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 15 seconds, 45 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 20 seconds, 40 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 25 seconds, 35 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 30 seconds, 30 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 35 seconds, 25 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 40 seconds, 20 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 45 seconds, 15 seconds remaining...
+.....Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 50 seconds, 10 seconds remaining...
+.....
+========= DETECTED VRF SERVER TRANSACTION =========
+Transaction signature: xuqxSrKp5dF9LDf5ez6X7diaY5n2pU4vGm6ikKYaVUE58PfGeh7Azh9jJp7yw6P7kjbVh4hUqeAVqAQPEXxVVdf
+LOG: Program log: VRF Coordinator: Processing instruction
+LOG: Program log: VRF Coordinator: CreateSubscription - min_balance: 100000, confirmations: 1
+LOG: Program log: VRF Coordinator: Creating subscription...
+LOG: Program log: VRF Coordinator: Subscription owner: 2MhPvFgnRVUDXaF8BwW1s1oCjPRw6xXzidAfffg8cifB
+LOG: Program log: VRF Coordinator: Subscription account: iBEtknj5N9jVVkiQV9BtjnBADtDvL7MFGQtA26GaGSk
+LOG: Program log: VRF Coordinator: Creating subscription account - space: 65, lamports: 1343280
+LOG: Program log: VRF_EVENT:AgqMZBsIwT23bxCnZhtoIF8wbCp2QG5MN4tJRTkc9XPpFCj6YMPlF2RqUqL6sK05UYbFazouOfmIOE069e+xcjKghgEAAAAAAA==
+====================================================
+
+Request account data length: 170
+Request account exists, approximate status byte: 0
+Request data bytes 130-150: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Waited for 55 seconds, 5 seconds remaining...
+.....
+Timed out waiting for VRF server to fulfill randomness!
+Checking final subscription state:
+Subscription account exists, data length: 65
+Subscription nonce: 1
+Subscription balance: 1000000
+Request account exists, data length: 170
+Status approximate byte: 0
+Check VRF server logs for more details.
+Error: Timed out waiting for VRF server to fulfill randomness
+test test_vrf_flow_devnet ... FAILED
+
+failures:
+
+failures:
+    test_vrf_flow_devnet
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 180.05s
+
+error: test failed, to rerun pass `-p kamui-program --test vrf_devnet_test`
