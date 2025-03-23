@@ -1,0 +1,18 @@
+{
+    "name": "vrf-server-nodejs",
+    "version": "1.0.0",
+    "description": "Node.js VRF server implementation using Rust ECVRF cryptographic operations",
+    "main": "vrf-server-nodejs.js",
+    "scripts": {
+        "start": "node vrf-server-nodejs.js"
+    },
+    "dependencies": {
+        "@solana/web3.js": "^1.73.0",
+        "borsh": "^0.7.0",
+        "winston": "^3.8.2",
+        "yargs": "^17.6.2"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    }
+}

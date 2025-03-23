@@ -1,0 +1,34 @@
+services:
+  camb-avs:
+    image: ghcr.io/cambrianone/camb-avs:${IMAGE_TAG:-latest}
+    restart: always
+    ports:
+      - '${AVS_PORT:-3000}:3000'
+      - '${AVS_WS_PORT:-3001}:3001'
+    healthcheck:
+      test: curl --fail http://localhost:3000/status || exit 1
+      interval: 2s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    environment:
+      LOG_LEVEL: '${LOG_LEVEL}'
+      ADMIN_KEY: '${ADMIN_KEY:-65cqma4sSgv3hqTXenahni6Yeqn9HenQU8FZa2ie3G7KBWmazZFPc3yUzHc3wC4aQZ4kYf3pKQdUwbvnouWFDDbn}'
+      VAULT_PUBLIC_KEY: '${VAULT_PUBLIC_KEY:-4b25nC794ED7jckRqGRqYVbBy9WK7wkjkJnga8L64QdQ}'
+      NCN_PUBLIC_KEY: '${NCN_PUBLIC_KEY:-7uyYpU8BgHRobKWFnBgaBf6cirmgZEFnbuVwXcmqiXCx}'
+      POA_NAME: '${POA_NAME:-kamui-node}'
+      API_URL: '${API_URL:-https://api.devnet.solana.com}'
+      API_WS_URL: '${API_WS_URL:-wss://api.devnet.solana.com}'
+      STAKE_THRESHOLD: '${STAKE_THRESHOLD:-1000}'
+      PROPOSAL_STORAGE_KEY: '${PROPOSAL_STORAGE_KEY:-propsal-storage-key}'
+      STORAGE_SPACE: '${STORAGE_SPACE:-75}'
+      
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      
+  # camb-log-service:
+  #   image: amir20/dozzle:latest
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   ports:
+  #     - 8080:8080

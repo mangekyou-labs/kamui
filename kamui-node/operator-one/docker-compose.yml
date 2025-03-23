@@ -1,0 +1,27 @@
+services:
+  camb-operator:
+    image: ghcr.io/cambrianone/camb-operator:${IMAGE_TAG:-latest}
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      
+    environment:
+      AVS_URL: '${AVS_URL:-http://host.docker.internal:3000}'
+      AVS_WS_URL: '${AVS_WS_URL:-ws://host.docker.internal:3001}'
+      API_URL: '${API_URL:-https://api.devnet.solana.com}'
+      API_WS_URL: '${API_URL:-wss://api.devnet.solana.com}'
+      LOG_LEVEL: '${LOG_LEVEL}'
+      VOTER_KEY: '${VOTER_KEY:-65cqma4sSgv3hqTXenahni6Yeqn9HenQU8FZa2ie3G7KBWmazZFPc3yUzHc3wC4aQZ4kYf3pKQdUwbvnouWFDDbn}'
+      ADMIN_KEY: '${ADMIN_KEY:-65cqma4sSgv3hqTXenahni6Yeqn9HenQU8FZa2ie3G7KBWmazZFPc3yUzHc3wC4aQZ4kYf3pKQdUwbvnouWFDDbn}'
+      NCN_PUBLIC_KEY: '${NCN_PUBLIC_KEY:-7uyYpU8BgHRobKWFnBgaBf6cirmgZEFnbuVwXcmqiXCx}'
+      VAULT_PUBLIC_KEY: '${VAULT_PUBLIC_KEY:-4b25nC794ED7jckRqGRqYVbBy9WK7wkjkJnga8L64QdQ}'
+      STORAGE_SPACE: '${STORAGE_SPACE:-75}'
+      PROPOSAL_STORAGE_KEY: '${PROPOSAL_STORAGE_KEY:-propsal-storage-key}'
+
+      OPERATOR_PUBLIC_KEY: '${OPERATOR_PUBLIC_KEY:-2NAfLKA125EF1AkocV36qp7LptmrwpGxnmsv3KaUxDf5}'
+      ORACLE_TYPE: '${ORACLE_TYPE:-container-stream}'
+      ORACLE_ARGS: '${ORACLE_ARGS:-}'
+      ORACLE_CONTAINER_IMAGE: '${ORACLE_CONTAINER_IMAGE:-oracle-update-current-date}'
+      
+    extra_hosts:
+      - "host.docker.internal:host-gateway"      
