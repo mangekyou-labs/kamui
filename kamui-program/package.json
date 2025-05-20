@@ -1,24 +1,33 @@
 {
   "name": "kamui-vrf",
   "version": "0.1.0",
-  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system",
+  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system with LayerZero integration",
   "main": "index.js",
   "scripts": {
     "test": "anchor test",
+    "test:layerzero": "anchor test tests/layerzero-vrf-integration.ts",
     "build": "anchor build",
     "direct-test": "./run-test.sh"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.0",
+    "@layerzerolabs/solidity-examples": "^0.0.13",
+    "@openzeppelin/contracts": "^4.8.0",
     "@solana/spl-account-compression": "^0.4.1",
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.78.4"
+    "@solana/web3.js": "^1.78.4",
+    "borsh": "^0.7.0",
+    "bs58": "^5.0.0"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
     "@types/bn.js": "^5.1.0",
     "@types/chai": "^4.3.0",
     "@types/mocha": "^9.0.0",
+    "@types/node": "^18.11.18",
     "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "hardhat": "^2.12.6",
     "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "tweetnacl": "^1.0.3",

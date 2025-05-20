@@ -9,10 +9,12 @@ solana_version = "2.1.22"
 [programs.devnet]
 kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
 kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
+kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
 
 [programs.localnet]
 kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
 kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
+kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
 
 [registry]
 url = "https://api.apr.dev"
@@ -40,8 +42,13 @@ program = "target/deploy/kamui_vrf.so"
 address = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y" 
 program = "target/deploy/kamui_vrf_consumer.so"
 
+[[test.genesis]]
+address = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs" 
+program = "target/deploy/kamui_layerzero.so"
+
 [workspace]
 members = [
     "programs/kamui-vrf",
     "programs/kamui-vrf-consumer",
+    "programs/kamui-layerzero",
 ] 

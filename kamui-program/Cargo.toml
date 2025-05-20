@@ -52,6 +52,7 @@ hex = "0.4"
 members = [
     "programs/kamui-vrf",
     "programs/kamui-vrf-consumer",
+    "programs/kamui-layerzero",
 ]
 resolver = "2"
 
