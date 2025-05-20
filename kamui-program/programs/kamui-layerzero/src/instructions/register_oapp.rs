@@ -29,7 +29,7 @@ pub struct RegisterOApp<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<RegisterOApp>,
+    ctx: &mut Context<RegisterOApp>,
     emitter_chain_id: u16,
     emitter_address: [u8; 32],
 ) -> Result<()> {
@@ -42,9 +42,12 @@ pub fn handle(
         }
     }
 
+    // First store the app_id
+    let app_id = ctx.accounts.oapp.key();
+    
+    // Then get a mutable reference and update all fields
     let oapp = &mut ctx.accounts.oapp;
     oapp.owner = ctx.accounts.owner.key();
-    let app_id = ctx.accounts.oapp.key();
     oapp.app_id = app_id;
     oapp.config = AppConfig {
         default_gas_limit: 100_000, // Default gas limit

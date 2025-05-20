@@ -27,7 +27,7 @@ pub const FANTOM_CHAIN_ID: u16 = 7;
 pub const BASE_CHAIN_ID: u16 = 8;
 
 /// Maximum number of trusted remotes an OApp can have
-pub const MAX_TRUSTED_REMOTES: usize = 20;
+pub const MAX_TRUSTED_REMOTES: usize = 5;
 
 /// Maximum number of pending VRF requests
-pub const MAX_PENDING_REQUESTS: usize = 100; 
+pub const MAX_PENDING_REQUESTS: usize = 10; 

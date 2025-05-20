@@ -35,9 +35,9 @@ pub struct SendMessage<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<SendMessage>,
+    ctx: &mut Context<SendMessage>,
     dst_chain_id: u16,
-    adapter_params: Vec<u8>,
+    _adapter_params: Vec<u8>,
     payload: Vec<u8>,
     fee: u64,
 ) -> Result<()> {

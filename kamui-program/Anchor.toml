@@ -24,7 +24,7 @@ cluster = "localnet"
 wallet = "./keypair.json"
 
 [scripts]
-test = "npx mocha --timeout 60000 tests/compressed-account-test.js tests/vrf-compressed-account-integration.js"
+test = "npx mocha --timeout 60000 tests/lz-basic-test.ts"
 
 [test]
 startup_wait = 10000

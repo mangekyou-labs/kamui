@@ -41,7 +41,7 @@ pub struct ReceiveMessage<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<ReceiveMessage>,
+    ctx: &mut Context<ReceiveMessage>,
     src_chain_id: u16,
     src_address: [u8; 32],
     nonce: u64,

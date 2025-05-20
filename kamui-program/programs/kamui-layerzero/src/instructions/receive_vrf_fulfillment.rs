@@ -40,7 +40,7 @@ pub struct ReceiveVrfFulfillment<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<ReceiveVrfFulfillment>,
+    ctx: &mut Context<ReceiveVrfFulfillment>,
     src_chain_id: u16,
     src_address: [u8; 32],
     nonce: u64,

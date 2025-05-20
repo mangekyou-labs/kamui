@@ -1,0 +1,24 @@
+Streaming transaction logs mentioning 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs. Confirmed commitment
+Transaction executed in slot 2:
+  Signature: 5Jy7JAMPhLJKiwpxjXq39tDEbaNv4cm58rJqzY6dWC3dVfdUPmgg7CjzhqxbJ2aCWq1J2sHyA9tPZ9UUZZ5ZWUYu
+  Status: Ok
+  Log Messages:
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs invoke [1]
+    Program log: Instruction: InitializeEndpoint
+    Program 11111111111111111111111111111111 invoke [2]
+    Program 11111111111111111111111111111111 success
+    Program 11111111111111111111111111111111 invoke [2]
+    Program 11111111111111111111111111111111 success
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs consumed 19237 of 200000 compute units
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs success
+Transaction executed in slot 3:
+  Signature: XDmgueX8V6GE4W4banysvofAsiknLtf1S2BuMtCYAfxkGcTUzz7TTjjHSCkadeBPgcdwydUVt9gpGUKjpVzrXQU
+  Status: Ok
+  Log Messages:
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs invoke [1]
+    Program log: Instruction: RegisterOapp
+    Program 11111111111111111111111111111111 invoke [2]
+    Program 11111111111111111111111111111111 success
+    Program log: OApp registered with app_id: AhSztmCAore1myM1uJjv4KzRtcNSRJvTx6SYcci7HTzH
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs consumed 23126 of 200000 compute units
+    Program 9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs success

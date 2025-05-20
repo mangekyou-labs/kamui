@@ -18,7 +18,7 @@ pub struct SetTrustedRemote<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<SetTrustedRemote>,
+    ctx: &mut Context<SetTrustedRemote>,
     remote_chain_id: u16,
     remote_address: [u8; 32],
 ) -> Result<()> {
