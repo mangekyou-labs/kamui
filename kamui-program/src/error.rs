@@ -53,6 +53,57 @@ pub enum VrfCoordinatorError {
 
     #[error("Invalid request parameters")]
     InvalidRequestParameters,
+    
+    #[error("Pool is full")]
+    PoolIsFull,
+    
+    #[error("Invalid pool ID")]
+    InvalidPoolId,
+    
+    #[error("Request not found")]
+    RequestNotFound,
+    
+    #[error("Subscription request limit exceeded")]
+    SubscriptionRequestLimitExceeded,
+    
+    #[error("Invalid request ID")]
+    InvalidRequestId,
+    
+    #[error("Invalid batch parameters")]
+    InvalidBatchParameters,
+    
+    #[error("Invalid oracle authority")]
+    InvalidOracleAuthority,
+    
+    #[error("Insufficient stake")]
+    InsufficientStake,
+    
+    #[error("Oracle not registered")]
+    OracleNotRegistered,
+    
+    #[error("Registry not initialized")]
+    RegistryNotInitialized,
+    
+    #[error("Invalid admin")]
+    InvalidAdmin,
+    
+    #[error("No requests to process")]
+    NoRequestsToProcess,
+    
+    #[error("Oracle reputation too low")]
+    OracleReputationTooLow,
+    
+    #[error("Rotation not due")]
+    RotationNotDue,
+    
+    #[error("Oracle already registered")]
+    OracleAlreadyRegistered,
+    
+    #[error("Request pool not initialized")]
+    RequestPoolNotInitialized,
+    
+    #[error("Request ID mismatch")]
+    RequestIdMismatch,
 }
 
 impl From<VrfCoordinatorError> for ProgramError {

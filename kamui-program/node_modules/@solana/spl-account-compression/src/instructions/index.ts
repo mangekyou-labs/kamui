@@ -1,0 +1,298 @@
+import { Connection, PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
+
+import { getConcurrentMerkleTreeAccountSize } from '../accounts';
+import { SPL_NOOP_PROGRAM_ID, ValidDepthSizePair } from '../constants';
+import {
+    createAppendCanopyNodesInstruction,
+    createAppendInstruction,
+    createCloseEmptyTreeInstruction,
+    createInitEmptyMerkleTreeInstruction,
+    createInitPreparedTreeWithRootInstruction,
+    createPrepareBatchMerkleTreeInstruction,
+    createReplaceLeafInstruction,
+    createTransferAuthorityInstruction,
+    createVerifyLeafInstruction,
+    PROGRAM_ID,
+} from '../generated';
+import { MerkleTreeProof } from '../merkle-tree';
+
+/**
+ * Helper function that adds proof nodes to a TransactionInstruction
+ * by adding extra keys to the transaction
+ */
+export function addProof(instruction: TransactionInstruction, nodeProof: Buffer[]): TransactionInstruction {
+    instruction.keys = instruction.keys.concat(
+        nodeProof.map(node => {
+            return {
+                isSigner: false,
+                isWritable: false,
+                pubkey: new PublicKey(node),
+            };
+        }),
+    );
+    return instruction;
+}
+
+/**
+ * Helper function for {@link createInitEmptyMerkleTreeInstruction}
+ *
+ * @param merkleTree
+ * @param authority
+ * @param depthSizePair
+ * @returns
+ */
+export function createInitEmptyMerkleTreeIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    depthSizePair: ValidDepthSizePair,
+): TransactionInstruction {
+    return createInitEmptyMerkleTreeInstruction(
+        {
+            authority: authority,
+            merkleTree,
+            noop: SPL_NOOP_PROGRAM_ID,
+        },
+        depthSizePair,
+    );
+}
+
+/**
+ * (Devnet only) Helper function for {@link createPrepareBatchMerkleTreeInstruction}
+ * @param merkleTree
+ * @param authority
+ * @param depthSizePair
+ * @returns
+ */
+export function prepareTreeIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    depthSizePair: ValidDepthSizePair,
+): TransactionInstruction {
+    return createPrepareBatchMerkleTreeInstruction(
+        {
+            authority: authority,
+            merkleTree,
+            noop: SPL_NOOP_PROGRAM_ID,
+        },
+        depthSizePair,
+    );
+}
+
+/**
+ * (Devnet only) Helper function for {@link createAppendCanopyNodesInstruction}
+ * @param merkleTree
+ * @param authority
+ * @param canopyNodes
+ * @param startIndex
+ * @returns
+ */
+export function createAppendCanopyNodesIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    canopyNodes: ArrayLike<number>[] | Buffer[],
+    startIndex: number,
+): TransactionInstruction {
+    return createAppendCanopyNodesInstruction(
+        {
+            authority,
+            merkleTree,
+            noop: SPL_NOOP_PROGRAM_ID,
+        },
+        {
+            canopyNodes: canopyNodes.map(node => Array.from(node)),
+            startIndex,
+        },
+    );
+}
+
+/**
+ * (Devnet only) Helper function for {@link createInitPreparedTreeWithRootInstruction}
+ * @param merkleTree
+ * @param authority
+ * @param root
+ * @param rightmostLeaf
+ * @param rightmostIndex
+ * @param proof
+ * @returns
+ */
+export function createInitPreparedTreeWithRootIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    root: ArrayLike<number> | Buffer,
+    rightmostLeaf: ArrayLike<number> | Buffer,
+    rightmostIndex: number,
+    proof: Buffer[],
+): TransactionInstruction {
+    return createInitPreparedTreeWithRootInstruction(
+        {
+            anchorRemainingAccounts: proof.map(node => {
+                return {
+                    isSigner: false,
+                    isWritable: false,
+                    pubkey: new PublicKey(node),
+                };
+            }),
+            authority,
+            merkleTree,
+            noop: SPL_NOOP_PROGRAM_ID,
+        },
+        {
+            rightmostIndex,
+            rightmostLeaf: Array.from(rightmostLeaf),
+            root: Array.from(root),
+        },
+    );
+}
+
+/**
+ * Helper function for {@link createReplaceLeafInstruction}
+ * @param merkleTree
+ * @param authority
+ * @param proof
+ * @param newLeaf
+ * @returns
+ */
+export function createReplaceIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    newLeaf: Buffer,
+    proof: MerkleTreeProof,
+): TransactionInstruction {
+    return addProof(
+        createReplaceLeafInstruction(
+            {
+                authority: authority,
+                merkleTree,
+                noop: SPL_NOOP_PROGRAM_ID,
+            },
+            {
+                index: proof.leafIndex,
+                newLeaf: Array.from(newLeaf),
+                previousLeaf: Array.from(proof.leaf),
+                root: Array.from(proof.root),
+            },
+        ),
+        proof.proof,
+    );
+}
+
+/**
+ * Helper function for {@link createAppendInstruction}
+ * @param merkleTree
+ * @param authority
+ * @param newLeaf
+ * @returns
+ */
+export function createAppendIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    newLeaf: ArrayLike<number> | Buffer,
+): TransactionInstruction {
+    return createAppendInstruction(
+        {
+            authority: authority,
+            merkleTree,
+            noop: SPL_NOOP_PROGRAM_ID,
+        },
+        {
+            leaf: Array.from(newLeaf),
+        },
+    );
+}
+
+/**
+ * Helper function for {@link createTransferAuthorityIx}
+ * @param merkleTree
+ * @param authority
+ * @param newAuthority
+ * @returns
+ */
+export function createTransferAuthorityIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    newAuthority: PublicKey,
+): TransactionInstruction {
+    return createTransferAuthorityInstruction(
+        {
+            authority: authority,
+            merkleTree,
+        },
+        {
+            newAuthority,
+        },
+    );
+}
+
+/**
+ * Helper function for {@link createVerifyLeafInstruction}
+ * @param merkleTree
+ * @param proof
+ * @returns
+ */
+export function createVerifyLeafIx(merkleTree: PublicKey, proof: MerkleTreeProof): TransactionInstruction {
+    return addProof(
+        createVerifyLeafInstruction(
+            {
+                merkleTree,
+            },
+            {
+                index: proof.leafIndex,
+                leaf: Array.from(proof.leaf),
+                root: Array.from(proof.root),
+            },
+        ),
+        proof.proof,
+    );
+}
+
+/**
+ * Helper function for creating the {@link ConcurrentMerkleTreeAccount}.
+ * It is best to use this method to initialize a {@link ConcurrentMerkleTreeAccount}
+ * because these accounts can be quite large, and over the limit for what you
+ * can allocate via CPI.
+ * @param connection
+ * @param merkleTree
+ * @param payer
+ * @param depthSizePair
+ * @param canopyDepth
+ * @returns
+ */
+export async function createAllocTreeIx(
+    connection: Connection,
+    merkleTree: PublicKey,
+    payer: PublicKey,
+    depthSizePair: ValidDepthSizePair,
+    canopyDepth: number,
+): Promise<TransactionInstruction> {
+    const requiredSpace = getConcurrentMerkleTreeAccountSize(
+        depthSizePair.maxDepth,
+        depthSizePair.maxBufferSize,
+        canopyDepth ?? 0,
+    );
+    return SystemProgram.createAccount({
+        fromPubkey: payer,
+        lamports: await connection.getMinimumBalanceForRentExemption(requiredSpace),
+        newAccountPubkey: merkleTree,
+        programId: PROGRAM_ID,
+        space: requiredSpace,
+    });
+}
+
+/**
+ * Helper function for {@link createCloseEmptyTreeInstruction}.
+ * @param merkleTree
+ * @param authority
+ * @param recipient
+ * @returns
+ */
+export function createCloseEmptyTreeIx(
+    merkleTree: PublicKey,
+    authority: PublicKey,
+    recipient: PublicKey,
+): TransactionInstruction {
+    return createCloseEmptyTreeInstruction({
+        authority,
+        merkleTree,
+        recipient,
+    });
+}

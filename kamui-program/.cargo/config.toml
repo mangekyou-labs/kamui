@@ -1,0 +1,11 @@
+[build]
+rustflags = ["-C", "link-arg=-s"]
+
+[net]
+git-fetch-with-cli = true
+
+[unstable]
+sparse-registry = true
+
+[patch.crates-io]
+proc-macro2 = { git = "https://github.com/dtolnay/proc-macro2", tag = "1.0.60" } 

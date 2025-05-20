@@ -1,0 +1,26 @@
+[package]
+name = "kamui-vrf-consumer"
+version = "0.1.0"
+description = "Example consumer for the Kamui VRF system"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "kamui_vrf_consumer"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.0"
+kamui-vrf = { path = "../kamui-vrf", features = ["cpi"] }
+hex = "0.4.3"
+
+[dev-dependencies]
+anchor-spl = "0.31.0" 

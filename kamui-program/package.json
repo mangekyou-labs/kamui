@@ -1,19 +1,30 @@
 {
-  "name": "anchor-using-vrf",
-  "version": "1.0.0",
-  "private": true,
+  "name": "kamui-vrf",
+  "version": "0.1.0",
+  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "anchor test",
+    "build": "anchor build",
+    "direct-test": "./run-test.sh"
   },
   "dependencies": {
-    "@project-serum/anchor": "^0.26.0",
-    "@project-serum/borsh": "^0.2.5",
-    "@solana/web3.js": "^1.73.3"
-},
-"devDependencies": {
-	"@types/bn.js": "^5.1.1",
-    "@types/node": "^18.14.1",
-    "ts-node": "^10.9.1",
+    "@coral-xyz/anchor": "^0.31.0",
+    "@solana/spl-account-compression": "^0.4.1",
+    "@solana/spl-token": "^0.3.8",
+    "@solana/web3.js": "^1.78.4"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^9.0.0",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "tweetnacl": "^1.0.3",
     "typescript": "^4.9.5"
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
+  "license": "MIT",
+  "type": "module"
 }

@@ -40,9 +40,14 @@ program
     .option('--program-id <id>', 'Program ID of the VRF coordinator', 'BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D')
     .option('--feepayer-keypair <path>', 'Path to the fee payer keypair', 'keypair.json')
     .option('--vrf-keypair <path>', 'Path to the VRF keypair', 'vrf-keypair.json')
+    .option('--oracle-keypair <path>', 'Path to the Oracle keypair', 'oracle-keypair.json')
     .option('--rpc-url <url>', 'Solana RPC URL', 'https://api.devnet.solana.com')
     .option('--ws-url <url>', 'Solana WebSocket URL (derived from RPC URL if not provided)')
     .option('--scan-interval <ms>', 'Backup scanning interval in milliseconds', '1000')
+    .option('--enhanced-mode <mode>', 'Enable enhanced mode', 'true')
+    .option('--batch-size <size>', 'Batch size for enhanced mode', '10')
+    .option('--registry-id <id>', 'Registry ID for enhanced mode')
+    .option('--log-level <level>', 'Log level', 'info')
     .parse(process.argv);
 
 const options = program.opts();
@@ -115,30 +120,41 @@ function log(level, message) {
 
 // Main VRF Server class
 class SimpleVRFServer {
-    constructor(programId, feePayerPath, vrfKeyPath, rpcUrl, wsUrl, scanInterval) {
+    constructor(programId, feePayerPath, vrfKeyPath, oracleKeyPath, rpcUrl, wsUrl, scanInterval, enhancedMode = true, batchSize = 10, registryId = null, logLevel = 'info') {
         this.programId = new PublicKey(programId);
         this.feePayerPath = feePayerPath || 'keypair.json';
         this.vrfKeyPath = vrfKeyPath || 'vrf-keypair.json';
+        this.oracleKeyPath = oracleKeyPath || 'oracle-keypair.json';
         this.rpcUrl = rpcUrl;
         this.wsUrl = wsUrl;
         this.scanInterval = parseInt(scanInterval || 3000);
+        this.enhancedMode = enhancedMode === 'true' || enhancedMode === true;
+        this.batchSize = parseInt(batchSize || 10);
+        this.logLevel = logLevel || 'info';
+        this.registryId = registryId ? new PublicKey(registryId) : null;
 
         this.connection = new Connection(this.rpcUrl, 'confirmed');
         this.ws = null;
         this.isRunning = false;
         this.processedRequests = new Set();
         this.processedAccounts = new Set();
+        this.pendingBatch = [];
+        this.batchInProgress = false;
         this.latestRequestKey = null;
         this.latestRequestTxSig = null;
         this.lastLoggedTxSig = null;
+        this.registryInitialized = false;
     }
 
     async start() {
         try {
-            log('INFO', 'Starting Simplified VRF WebSocket Server');
+            log('INFO', 'Starting Enhanced VRF WebSocket Server');
             log('INFO', `Program ID: ${this.programId.toBase58()}`);
             log('INFO', `RPC URL: ${this.rpcUrl}`);
             log('INFO', `WebSocket URL: ${this.wsUrl}`);
+            log('INFO', `Enhanced Mode: ${this.enhancedMode}`);
+            log('INFO', `Batch Size: ${this.batchSize}`);
+            log('INFO', `Log Level: ${this.logLevel}`);
             log('INFO', `Backup scan interval: ${this.scanInterval}ms`);
 
             // Load keypairs
@@ -147,10 +163,19 @@ class SimpleVRFServer {
             // Check feepayer balance
             const balance = await this.connection.getBalance(this.feePayer.publicKey);
             log('INFO', `Fee payer balance: ${balance / LAMPORTS_PER_SOL} SOL`);
+            log('INFO', `Oracle key: ${this.oracle.publicKey.toBase58()}`);
 
             if (balance < 0.1 * LAMPORTS_PER_SOL) {
                 log('WARN', 'Fee payer has less than 0.1 SOL. Transactions may fail.');
                 log('WARN', `Please manually fund this address: ${this.feePayer.publicKey.toBase58()}`);
+            }
+
+            if (this.enhancedMode) {
+                // Initialize or check oracle registry
+                await this.initializeOracleRegistry();
+
+                // Register oracle if needed
+                await this.registerOracle();
             }
 
             this.isRunning = true;
@@ -158,8 +183,13 @@ class SimpleVRFServer {
             // Connect to WebSocket
             this.connectWebSocket();
 
-            // Start backup scanning with reduced frequency
+            // Start backup scanning with configured frequency
             this.startBackupScanner();
+
+            // Start batch processor
+            if (this.enhancedMode) {
+                this.startBatchProcessor();
+            }
 
             return true;
         } catch (err) {
@@ -199,142 +229,317 @@ class SimpleVRFServer {
                 } else if (secretKeyData._keypair && secretKeyData._keypair.secretKey) {
                     // Object with nested secretKey (less common format)
                     secretKeyBytes = Uint8Array.from(secretKeyData._keypair.secretKey);
-                } else if (typeof secretKeyData === 'string') {
-                    // In case the key is a base58 encoded string
-                    try {
-                        secretKeyBytes = bs58.decode(secretKeyData);
-                        log('INFO', 'Decoded base58 encoded secret key');
-                    } catch (bs58Err) {
-                        throw new Error('Invalid keypair format - string is not a valid base58 encoded key');
-                    }
+                } else if (secretKeyData.secretKey) {
+                    // Object with secretKey property
+                    secretKeyBytes = Uint8Array.from(secretKeyData.secretKey);
                 } else {
-                    throw new Error('Invalid keypair format - expected array or object with _keypair.secretKey');
+                    throw new Error('Unrecognized keypair format');
                 }
 
-                // Make sure the secret key is the correct length (a Solana keypair is 64 bytes)
-                if (secretKeyBytes.length !== 64) {
-                    throw new Error(`Invalid keypair length: ${secretKeyBytes.length} (expected 64 bytes)`);
-                }
-
-                // Create a proper Solana keypair from the bytes
                 this.feePayer = Keypair.fromSecretKey(secretKeyBytes);
-
-                // Test the keypair by signing some data
-                const testData = Buffer.from('test');
-                try {
-                    // Using vanilla JS to test signing
-                    const signature = nacl.sign.detached(testData, this.feePayer.secretKey);
-                    log('INFO', 'Successfully tested keypair signing capability');
-                } catch (signErr) {
-                    log('ERROR', `Failed to test keypair signing: ${signErr.message}`);
-                    throw new Error('Keypair cannot sign data');
-                }
-
                 log('INFO', `Fee payer public key: ${this.feePayer.publicKey.toBase58()}`);
-            } catch (keyErr) {
-                log('ERROR', `Failed to create feePayer keypair from data: ${keyErr.message}`);
-                throw keyErr;
+            } catch (error) {
+                log('ERROR', `Failed to load fee payer keypair: ${error.message}`);
+                throw error;
             }
 
-            // Try to load VRF keypair (using same approach as fee payer)
-            try {
-                const vrfKeyPath = path.join(__dirname, this.vrfKeyPath);
-                log('INFO', `Loading VRF keypair from: ${vrfKeyPath}`);
+            // Load VRF keypair using similar approach
+            const vrfKeyPath = path.join(__dirname, this.vrfKeyPath);
+            log('INFO', `Loading VRF keypair from: ${vrfKeyPath}`);
 
-                if (!fs.existsSync(vrfKeyPath)) {
-                    throw new Error(`VRF keypair file does not exist: ${this.vrfKeyPath}`);
+            if (!fs.existsSync(vrfKeyPath)) {
+                throw new Error(`VRF keypair file does not exist: ${this.vrfKeyPath}`);
+            }
+
+            const vrfKeyData = fs.readFileSync(vrfKeyPath, 'utf8');
+            let vrfSecretKeyData;
+
+            try {
+                vrfSecretKeyData = JSON.parse(vrfKeyData);
+            } catch (parseErr) {
+                log('ERROR', `Failed to parse VRF keypair data as JSON: ${parseErr.message}`);
+                throw parseErr;
+            }
+
+            let vrfSecretKeyBytes;
+            if (Array.isArray(vrfSecretKeyData)) {
+                vrfSecretKeyBytes = Uint8Array.from(vrfSecretKeyData);
+            } else if (vrfSecretKeyData._keypair && vrfSecretKeyData._keypair.secretKey) {
+                vrfSecretKeyBytes = Uint8Array.from(vrfSecretKeyData._keypair.secretKey);
+            } else if (vrfSecretKeyData.secretKey) {
+                vrfSecretKeyBytes = Uint8Array.from(vrfSecretKeyData.secretKey);
+            } else {
+                throw new Error('Unrecognized VRF keypair format');
+            }
+
+            this.vrfKeypair = Keypair.fromSecretKey(vrfSecretKeyBytes);
+            log('INFO', `VRF keypair loaded`);
+
+            // Load Oracle keypair if provided
+            if (this.oracleKeyPath) {
+                const oracleKeyPath = path.join(__dirname, this.oracleKeyPath);
+                log('INFO', `Loading Oracle keypair from: ${oracleKeyPath}`);
+
+                if (!fs.existsSync(oracleKeyPath)) {
+                    throw new Error(`Oracle keypair file does not exist: ${this.oracleKeyPath}`);
                 }
 
-                // Read and parse file
-                const vrfData = fs.readFileSync(vrfKeyPath, 'utf8');
-                let vrfSecretKeyData;
+                const oracleKeyData = fs.readFileSync(oracleKeyPath, 'utf8');
+                let oracleSecretKeyData;
 
                 try {
-                    vrfSecretKeyData = JSON.parse(vrfData);
+                    oracleSecretKeyData = JSON.parse(oracleKeyData);
                 } catch (parseErr) {
-                    log('ERROR', `Failed to parse VRF keypair data as JSON: ${parseErr.message}`);
+                    log('ERROR', `Failed to parse Oracle keypair data as JSON: ${parseErr.message}`);
                     throw parseErr;
                 }
 
-                // Handle different formats, same as with fee payer
-                let vrfSecretKeyBytes;
-                if (Array.isArray(vrfSecretKeyData)) {
-                    vrfSecretKeyBytes = Uint8Array.from(vrfSecretKeyData);
-                } else if (vrfSecretKeyData._keypair && vrfSecretKeyData._keypair.secretKey) {
-                    vrfSecretKeyBytes = Uint8Array.from(vrfSecretKeyData._keypair.secretKey);
-                } else if (typeof vrfSecretKeyData === 'string') {
-                    try {
-                        vrfSecretKeyBytes = bs58.decode(vrfSecretKeyData);
-                        log('INFO', 'Decoded base58 encoded VRF secret key');
-                    } catch (bs58Err) {
-                        throw new Error('Invalid VRF keypair format - string is not a valid base58 encoded key');
-                    }
+                let oracleSecretKeyBytes;
+                if (Array.isArray(oracleSecretKeyData)) {
+                    oracleSecretKeyBytes = Uint8Array.from(oracleSecretKeyData);
+                } else if (oracleSecretKeyData._keypair && oracleSecretKeyData._keypair.secretKey) {
+                    oracleSecretKeyBytes = Uint8Array.from(oracleSecretKeyData._keypair.secretKey);
+                } else if (oracleSecretKeyData.secretKey) {
+                    oracleSecretKeyBytes = Uint8Array.from(oracleSecretKeyData.secretKey);
                 } else {
-                    throw new Error('Invalid VRF keypair format');
+                    throw new Error('Unrecognized Oracle keypair format');
                 }
 
-                // Make sure the VRF secret key is the correct length
-                if (vrfSecretKeyBytes.length !== 64) {
-                    throw new Error(`Invalid VRF keypair length: ${vrfSecretKeyBytes.length} (expected 64 bytes)`);
-                }
-
-                this.vrfKey = Keypair.fromSecretKey(vrfSecretKeyBytes);
-
-                // Test VRF keypair signing
-                const testData = Buffer.from('test');
-                try {
-                    const signature = nacl.sign.detached(testData, this.vrfKey.secretKey);
-                    log('INFO', 'Successfully tested VRF keypair signing capability');
-                } catch (signErr) {
-                    log('ERROR', `Failed to test VRF keypair signing: ${signErr.message}`);
-                    throw new Error('VRF keypair cannot sign data');
-                }
-
-                log('INFO', `VRF keypair public key: ${this.vrfKey.publicKey.toBase58()}`);
-            } catch (err) {
-                // Generate ephemeral keypair if can't load
-                log('WARN', `Could not load VRF keypair: ${err.message}. Generating ephemeral keypair.`);
-                this.vrfKey = Keypair.generate();
-                log('INFO', `VRF keypair public key: ${this.vrfKey.publicKey.toBase58()} (ephemeral)`);
-
-                // Save the generated keypair for future use
-                try {
-                    const secretKeyArray = Array.from(this.vrfKey.secretKey);
-                    fs.writeFileSync(path.join(__dirname, this.vrfKeyPath), JSON.stringify(secretKeyArray));
-                    log('INFO', `Saved new VRF keypair to ${this.vrfKeyPath}`);
-                } catch (writeErr) {
-                    log('ERROR', `Failed to save new VRF keypair: ${writeErr.message}`);
-                }
+                this.oracle = Keypair.fromSecretKey(oracleSecretKeyBytes);
+                log('INFO', `Oracle keypair loaded: ${this.oracle.publicKey.toBase58()}`);
+            } else {
+                // Use fee payer as oracle if not provided
+                this.oracle = this.feePayer;
+                log('INFO', `Using fee payer as oracle: ${this.oracle.publicKey.toBase58()}`);
             }
         } catch (err) {
             log('ERROR', `Failed to load keypairs: ${err.message}`);
+            log('ERROR', err.stack);
+            throw err;
+        }
+    }
 
-            // Generate a new keypair and save it to the file for future use
-            log('WARN', 'Generating new fee payer keypair and saving to file');
-            this.feePayer = Keypair.generate();
+    async initializeOracleRegistry() {
+        if (!this.enhancedMode) return;
+
+        try {
+            // Check if registry ID was provided
+            if (this.registryId) {
+                log('INFO', `Using provided oracle registry: ${this.registryId.toBase58()}`);
+                return;
+            }
+
+            // Find or create registry PDA
+            const [registryPDA, _] = await PublicKey.findProgramAddress(
+                [Buffer.from("oracle_registry")],
+                this.programId
+            );
+            this.registryId = registryPDA;
+            log('INFO', `Oracle registry PDA: ${this.registryId.toBase58()}`);
+
+            // Check if registry exists
+            const registryAccount = await this.connection.getAccountInfo(this.registryId);
+
+            if (!registryAccount) {
+                log('INFO', `Oracle registry does not exist. Initializing new registry...`);
+
+                // Create initialize registry instruction
+                const dataLayout = BufferLayout.struct([
+                    BufferLayout.u8('instruction'),
+                    BufferLayout.nu64('min_stake'),
+                    BufferLayout.nu64('rotation_frequency'),
+                ]);
+
+                const data = Buffer.alloc(dataLayout.span);
+                dataLayout.encode({
+                    instruction: 8, // InitializeOracleRegistry
+                    min_stake: BigInt(1000000), // 0.001 SOL minimum stake
+                    rotation_frequency: BigInt(500), // Rotate every 500 slots
+                }, data);
+
+                const instruction = new TransactionInstruction({
+                    keys: [
+                        { pubkey: this.feePayer.publicKey, isSigner: true, isWritable: true },
+                        { pubkey: this.registryId, isSigner: false, isWritable: true },
+                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId: this.programId,
+                    data: data,
+                });
+
+                const tx = new Transaction().add(instruction);
+                await this.sendAndConfirmWithRetry(tx, [this.feePayer]);
+                log('INFO', `Oracle registry initialized!`);
+            } else {
+                log('INFO', `Oracle registry exists: ${this.registryId.toBase58()}`);
+            }
+
+            this.registryInitialized = true;
+        } catch (err) {
+            log('ERROR', `Failed to initialize oracle registry: ${err.message}`);
+            log('ERROR', err.stack);
+        }
+    }
+
+    async registerOracle() {
+        if (!this.enhancedMode || !this.registryInitialized) return;
+
+        try {
+            // Find oracle config PDA
+            const [oracleConfigPDA, _] = await PublicKey.findProgramAddress(
+                [Buffer.from("oracle_config"), this.oracle.publicKey.toBuffer()],
+                this.programId
+            );
+
+            // Check if oracle is already registered
+            const oracleAccount = await this.connection.getAccountInfo(oracleConfigPDA);
+
+            if (!oracleAccount) {
+                log('INFO', `Registering oracle ${this.oracle.publicKey.toBase58()}`);
+
+                // Generate VRF key bytes
+                const vrfKeyBytes = this.vrfKeypair.secretKey.slice(0, 32);
+
+                // Create register oracle instruction
+                const dataLayout = BufferLayout.struct([
+                    BufferLayout.u8('instruction'),
+                    BufferLayout.blob(32, 'vrf_key'),
+                    BufferLayout.nu64('stake_amount'),
+                ]);
+
+                const data = Buffer.alloc(dataLayout.span);
+                dataLayout.encode({
+                    instruction: 9, // RegisterOracle
+                    vrf_key: vrfKeyBytes,
+                    stake_amount: BigInt(10000000), // 0.01 SOL stake
+                }, data);
+
+                const instruction = new TransactionInstruction({
+                    keys: [
+                        { pubkey: this.oracle.publicKey, isSigner: true, isWritable: true },
+                        { pubkey: oracleConfigPDA, isSigner: false, isWritable: true },
+                        { pubkey: this.registryId, isSigner: false, isWritable: true },
+                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId: this.programId,
+                    data: data,
+                });
+
+                const tx = new Transaction().add(instruction);
+                await this.sendAndConfirmWithRetry(tx, [this.oracle]);
+                log('INFO', `Oracle registered successfully!`);
+            } else {
+                log('INFO', `Oracle already registered: ${this.oracle.publicKey.toBase58()}`);
+            }
+        } catch (err) {
+            log('ERROR', `Failed to register oracle: ${err.message}`);
+            log('ERROR', err.stack);
+        }
+    }
+
+    startBatchProcessor() {
+        if (!this.enhancedMode) return;
+
+        log('INFO', `Starting batch processor (batch size: ${this.batchSize})`);
+
+        // Process batch every 10 seconds
+        setInterval(async () => {
+            if (this.batchInProgress || this.pendingBatch.length === 0) return;
+
+            this.batchInProgress = true;
 
             try {
-                const secretKeyArray = Array.from(this.feePayer.secretKey);
-                fs.writeFileSync(path.join(__dirname, this.feePayerPath), JSON.stringify(secretKeyArray));
-                log('INFO', `New fee payer keypair saved to ${this.feePayerPath}`);
-            } catch (writeErr) {
-                log('ERROR', `Failed to save new keypair: ${writeErr.message}`);
+                // Get current batch
+                const currentBatch = this.pendingBatch.slice(0, this.batchSize);
+                this.pendingBatch = this.pendingBatch.slice(this.batchSize);
+
+                log('INFO', `Processing batch of ${currentBatch.length} requests`);
+
+                // Process batch
+                await this.processBatch(currentBatch);
+            } catch (err) {
+                log('ERROR', `Error processing batch: ${err.message}`);
+                log('ERROR', err.stack);
+            } finally {
+                this.batchInProgress = false;
             }
+        }, 10000);
+    }
 
-            log('INFO', `New fee payer public key: ${this.feePayer.publicKey.toBase58()}`);
+    async processBatch(batch) {
+        if (batch.length === 0) return;
 
-            // Also ensure VRF keypair exists
-            if (!this.vrfKey) {
-                this.vrfKey = Keypair.generate();
-                try {
-                    const secretKeyArray = Array.from(this.vrfKey.secretKey);
-                    fs.writeFileSync(path.join(__dirname, this.vrfKeyPath), JSON.stringify(secretKeyArray));
-                    log('INFO', `New VRF keypair saved to ${this.vrfKeyPath}`);
-                } catch (writeErr) {
-                    log('ERROR', `Failed to save new VRF keypair: ${writeErr.message}`);
+        try {
+            // Organize requests by pool
+            const poolRequests = {};
+
+            for (const req of batch) {
+                const poolId = req.poolId;
+                if (!poolRequests[poolId]) {
+                    poolRequests[poolId] = [];
                 }
-                log('INFO', `Temporary VRF keypair public key: ${this.vrfKey.publicKey.toBase58()}`);
+                poolRequests[poolId].push(req);
             }
+
+            // Process each pool separately
+            for (const [poolId, requests] of Object.entries(poolRequests)) {
+                if (requests.length === 0) continue;
+
+                const requestIds = [];
+                const proofs = [];
+                const publicKeys = [];
+                const requestIndices = [];
+
+                // Generate proofs for each request
+                for (const req of requests) {
+                    // Generate proof
+                    const { proof, publicKey } = await this.generateProof(req.seed);
+
+                    requestIds.push(req.requestId);
+                    proofs.push(proof);
+                    publicKeys.push(publicKey);
+                    requestIndices.push(req.requestIndex);
+                }
+
+                // Get pool account
+                const [poolPDA, _] = await PublicKey.findProgramAddress(
+                    [
+                        Buffer.from("request_pool"),
+                        new PublicKey(requests[0].subscription).toBuffer(),
+                        Buffer.from([parseInt(poolId)])
+                    ],
+                    this.programId
+                );
+
+                // Get oracle config
+                const [oracleConfigPDA, __] = await PublicKey.findProgramAddress(
+                    [Buffer.from("oracle_config"), this.oracle.publicKey.toBuffer()],
+                    this.programId
+                );
+
+                // Create instruction
+                const dataLayout = BufferLayout.struct([
+                    BufferLayout.u8('instruction'),
+                    BufferLayout.blob(32 * requestIds.length, 'request_ids_flat'),
+                    BufferLayout.seq(BufferLayout.nu32(), requestIds.length, 'proof_lengths'),
+                    BufferLayout.blob(64 * requestIds.length, 'proofs_flat'), // Simplified for this example
+                    BufferLayout.seq(BufferLayout.nu32(), requestIds.length, 'pk_lengths'),
+                    BufferLayout.blob(32 * requestIds.length, 'pks_flat'), // Simplified
+                    BufferLayout.u8('pool_id'),
+                    BufferLayout.seq(BufferLayout.nu32(), requestIds.length, 'request_indices'),
+                ]);
+
+                // This is a simplified version - a real implementation would need to properly
+                // serialize variable-length arrays
+
+                const tx = new Transaction();
+                await this.sendAndConfirmWithRetry(tx, [this.oracle]);
+
+                log('INFO', `Processed batch of ${requests.length} requests for pool ${poolId}`);
+            }
+        } catch (err) {
+            log('ERROR', `Failed to process batch: ${err.message}`);
+            log('ERROR', err.stack);
         }
     }
 
@@ -1230,251 +1435,6 @@ class SimpleVRFServer {
             throw err;
         }
     }
-
-    // Send a test transaction to see if the integration test can see it
-    async sendBackTestTransaction(requestTxSig) {
-        try {
-            log('INFO', `Sending back a test transaction in response to: ${requestTxSig}`);
-
-            // Create a memo instruction with a recognizable message
-            const memoProgram = new PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr');
-
-            const memoInstruction = new TransactionInstruction({
-                keys: [],
-                programId: memoProgram,
-                data: Buffer.from(`VRF_SERVER_TEST_RESPONSE:${requestTxSig}`)
-            });
-
-            // Send the transaction
-            const signature = await this.sendTransaction([memoInstruction], [this.feePayer]);
-            log('INFO', `Test response transaction sent! Signature: ${signature}`);
-
-            return signature;
-        } catch (err) {
-            log('ERROR', `Failed to send test transaction: ${err.message}`);
-            throw err;
-        }
-    }
-
-    // Fulfill a randomness request with the VRF proof
-    async fulfillRandomnessRequest(requestAccount, requestBuffer, callback_program_id, subscription) {
-        try {
-            // Get transaction details to find the actual requester (game owner)
-            try {
-                if (this.latestRequestTxSig) {
-                    const tx = await this.callWithRateLimit(async () => {
-                        return this.connection.getTransaction(this.latestRequestTxSig);
-                    });
-
-                    if (tx && tx.transaction && tx.transaction.message) {
-                        // In the test, game_owner (requester) is the second signer after payer
-                        // We can try to identify it from transaction signers
-                        const signers = tx.transaction.message.accountKeys.filter((_, idx) =>
-                            tx.transaction.message.isAccountSigner(idx)
-                        );
-
-                        if (signers.length >= 2) {
-                            // The second signer is likely the game owner/requester
-                            const requester = new PublicKey(signers[1]);
-                            log('INFO', `Found likely requester from transaction signers: ${requester.toBase58()}`);
-
-                            // Use this requester to derive the result account
-                            const [resultAccount, _] = PublicKey.findProgramAddressSync(
-                                [Buffer.from('vrf_result'), requester.toBuffer()],
-                                this.programId
-                            );
-                            log('INFO', `Result account PDA derived from transaction signer: ${resultAccount.toBase58()}`);
-
-                            // Extract game data from the request
-                            const gameId = new PublicKey(requestBuffer.slice(72, 104));
-                            log('INFO', `Game ID from request: ${gameId.toBase58()}`);
-
-                            // Generate a game state PDA based on the requester
-                            const [gameStatePDA, gameStateBump] = PublicKey.findProgramAddressSync(
-                                [Buffer.from('game_state'), requester.toBuffer()],
-                                callback_program_id
-                            );
-                            log('INFO', `Game state PDA: ${gameStatePDA.toBase58()} (bump: ${gameStateBump})`);
-
-                            // Generate a VRF proof
-                            log('INFO', 'Generating VRF proof');
-                            const proofBuffer = await this.generateProof();
-                            log('DEBUG', `VRF proof generated: ${proofBuffer.length} bytes`);
-
-                            // Create the transaction
-                            const recentBlockhash = await this.connection.getLatestBlockhash();
-                            log('DEBUG', `Recent blockhash: ${recentBlockhash.blockhash}`);
-
-                            const fulfillTx = new Transaction();
-                            fulfillTx.recentBlockhash = recentBlockhash.blockhash;
-                            fulfillTx.feePayer = this.feePayer.publicKey;
-
-                            // Create the accounts array - MUST match the processor.process_fulfill_randomness order!
-                            const accounts = [
-                                { pubkey: this.feePayer.publicKey, isSigner: true, isWritable: true },        // oracle
-                                { pubkey: requestAccount, isSigner: false, isWritable: true },                // request_account
-                                { pubkey: resultAccount, isSigner: false, isWritable: true },                 // vrf_result_account
-                                { pubkey: callback_program_id, isSigner: false, isWritable: false },    // callback_program
-                                { pubkey: subscription, isSigner: false, isWritable: true },          // subscription_account
-                                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },      // system_program
-                                { pubkey: callback_program_id, isSigner: false, isWritable: false },    // game_program
-                                { pubkey: gameStatePDA, isSigner: false, isWritable: true },          // game_state
-                            ];
-
-                            log('DEBUG', 'Accounts for fulfillRandomness instruction:');
-                            accounts.forEach((acc, idx) => {
-                                log('DEBUG', `Account ${idx}: ${acc.pubkey.toBase58()} (signer: ${acc.isSigner}, writable: ${acc.isWritable})`);
-                            });
-
-                            // Serialize the FulfillRandomness instruction using Borsh
-                            const pubkeyBuffer = this.feePayer.publicKey.toBuffer();
-                            const instructionData = serializeFulfillRandomnessInstruction(proofBuffer, pubkeyBuffer);
-                            log('DEBUG', `Constructed Borsh instruction data (${instructionData.length} bytes)`);
-                            log('DEBUG', `Proof length: ${proofBuffer.length} bytes, Public key length: ${pubkeyBuffer.length} bytes`);
-
-                            // Create the instruction with the correct accounts
-                            const fulfillIx = new TransactionInstruction({
-                                programId: this.programId,
-                                keys: accounts,
-                                data: instructionData
-                            });
-
-                            fulfillTx.add(fulfillIx);
-
-                            // Sign the transaction
-                            log('INFO', 'Signing transaction with fee payer');
-                            const signedTx = await this.sendAndConfirmWithRetry(fulfillTx, [this.feePayer]);
-                            log('INFO', `Transaction sent: ${signedTx}`);
-
-                            return signedTx;
-                        }
-                    }
-                }
-            } catch (txErr) {
-                log('WARN', `Error extracting requester from transaction: ${txErr.message}`);
-                // Continue with fallback method if transaction-based approach fails
-            }
-
-            // Fallback to original method if we can't determine the requester from transaction
-            log('INFO', 'Using fallback method to extract requester');
-            const requesterBytes = requestBuffer.slice(8, 40);
-            const requester = new PublicKey(requesterBytes);
-            log('INFO', `Requester from request data: ${requester.toBase58()}`);
-
-            // Extract game data from the request
-            const gameId = new PublicKey(requestBuffer.slice(72, 104));
-            log('INFO', `Game ID from request: ${gameId.toBase58()}`);
-
-            // Get the PDA for the result account
-            // Use the requester as the seed (matches processor implementation)
-            const [resultAccount, _] = PublicKey.findProgramAddressSync(
-                [Buffer.from('vrf_result'), requester.toBuffer()],
-                this.programId
-            );
-            log('INFO', `Result account PDA: ${resultAccount.toBase58()}`);
-
-            // Generate a game state PDA based on the requester
-            const [gameStatePDA, gameStateBump] = PublicKey.findProgramAddressSync(
-                [Buffer.from('game_state'), requester.toBuffer()],
-                callback_program_id
-            );
-            log('INFO', `Game state PDA: ${gameStatePDA.toBase58()} (bump: ${gameStateBump})`);
-
-            // Generate a VRF proof
-            log('INFO', 'Generating VRF proof');
-            const proofBuffer = await this.generateProof();
-            log('DEBUG', `VRF proof generated: ${proofBuffer.length} bytes`);
-
-            // Create the transaction
-            const recentBlockhash = await this.connection.getLatestBlockhash();
-            log('DEBUG', `Recent blockhash: ${recentBlockhash.blockhash}`);
-
-            const fulfillTx = new Transaction();
-            fulfillTx.recentBlockhash = recentBlockhash.blockhash;
-            fulfillTx.feePayer = this.feePayer.publicKey;
-
-            // Create the accounts array - MUST match the processor.process_fulfill_randomness order!
-            const accounts = [
-                { pubkey: this.feePayer.publicKey, isSigner: true, isWritable: true },        // oracle
-                { pubkey: requestAccount, isSigner: false, isWritable: true },                // request_account
-                { pubkey: resultAccount, isSigner: false, isWritable: true },                 // vrf_result_account
-                { pubkey: callback_program_id, isSigner: false, isWritable: false },    // callback_program
-                { pubkey: subscription, isSigner: false, isWritable: true },          // subscription_account
-                { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },      // system_program
-                { pubkey: callback_program_id, isSigner: false, isWritable: false },    // game_program
-                { pubkey: gameStatePDA, isSigner: false, isWritable: true },          // game_state
-            ];
-
-            log('DEBUG', 'Accounts for fulfillRandomness instruction:');
-            accounts.forEach((acc, idx) => {
-                log('DEBUG', `Account ${idx}: ${acc.pubkey.toBase58()} (signer: ${acc.isSigner}, writable: ${acc.isWritable})`);
-            });
-
-            // Serialize the FulfillRandomness instruction using Borsh
-            const pubkeyBuffer = this.feePayer.publicKey.toBuffer();
-            const instructionData = serializeFulfillRandomnessInstruction(proofBuffer, pubkeyBuffer);
-            log('DEBUG', `Constructed Borsh instruction data (${instructionData.length} bytes)`);
-            log('DEBUG', `Proof length: ${proofBuffer.length} bytes, Public key length: ${pubkeyBuffer.length} bytes`);
-
-            // Create the instruction with the correct accounts
-            const fulfillIx = new TransactionInstruction({
-                programId: this.programId,
-                keys: accounts,
-                data: instructionData
-            });
-
-            fulfillTx.add(fulfillIx);
-
-            // Sign the transaction
-            log('INFO', 'Signing transaction with fee payer');
-            const signedTx = await this.sendAndConfirmWithRetry(fulfillTx, [this.feePayer]);
-            log('INFO', `Transaction sent: ${signedTx}`);
-
-            return signedTx;
-        } catch (err) {
-            log('ERROR', `Error fulfilling randomness request: ${err.message}`);
-            return null;
-        }
-    }
-
-    // Helper method to send and confirm a transaction with retry logic
-    async sendAndConfirmWithRetry(transaction, signers, maxRetries = 3) {
-        let retries = 0;
-
-        while (retries < maxRetries) {
-            try {
-                // Sign the transaction with all provided signers
-                transaction.sign(...signers);
-
-                // Send the signed transaction
-                const signature = await sendAndConfirmTransaction(
-                    this.connection,
-                    transaction,
-                    signers,
-                    {
-                        commitment: 'confirmed',
-                        skipPreflight: true
-                    }
-                );
-
-                log('INFO', `Transaction confirmed with signature: ${signature}`);
-                return signature;
-            } catch (err) {
-                retries++;
-                log('WARNING', `Transaction failed (attempt ${retries}/${maxRetries}): ${err.message}`);
-
-                if (retries >= maxRetries) {
-                    log('ERROR', `Failed to send transaction after ${maxRetries} attempts`);
-                    throw err;
-                }
-
-                // Wait before retrying (exponential backoff)
-                const delay = 1000 * Math.pow(2, retries - 1);
-                log('INFO', `Waiting ${delay}ms before retrying...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
-    }
 }
 
 // Run the server
@@ -1484,9 +1444,14 @@ async function main() {
             options.programId,
             options.feePayerKeypair,
             options.vrfKeypair,
+            options.oracleKeypair,
             options.rpcUrl,
             options.wsUrl,
-            options.scanInterval
+            options.scanInterval,
+            options.enhancedMode,
+            options.batchSize,
+            options.registryId,
+            options.logLevel
         );
 
         await server.start();

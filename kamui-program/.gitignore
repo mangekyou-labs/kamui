@@ -2,3 +2,5 @@ keypair.json
 vrf-keypair.json
 oracle-keypair.json
 /target
+
+/node_modules

@@ -3,7 +3,6 @@ resolver = "2"
 members = [
     "mangekyou-derive",
     "mangekyou-cli",
-    "kamui-program",
     "vrf-server"
 ]
 # Dependencies that should be kept in sync through the whole workspace
