@@ -1,0 +1,54 @@
+[features]
+seeds = false
+skip-lint = false
+
+[toolchain]
+anchor_version = "0.31.0"
+solana_version = "2.1.22"
+
+[programs.devnet]
+kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
+kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
+kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
+
+[programs.localnet]
+kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
+kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
+kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "./keypair.json"
+
+[scripts]
+test = "npx mocha --timeout 60000 tests/compressed-account-test.js tests/vrf-compressed-account-integration.js"
+
+[test]
+startup_wait = 10000
+# Set a larger program buffer size to handle the deployment
+program_buffer_size = 400000
+
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+[[test.genesis]]
+address = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
+program = "target/deploy/kamui_vrf.so"
+
+[[test.genesis]]
+address = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y" 
+program = "target/deploy/kamui_vrf_consumer.so"
+
+[[test.genesis]]
+address = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs" 
+program = "target/deploy/kamui_layerzero.so"
+
+[workspace]
+members = [
+    "programs/kamui-vrf",
+    "programs/kamui-vrf-consumer",
+    "programs/kamui-layerzero",
+] 

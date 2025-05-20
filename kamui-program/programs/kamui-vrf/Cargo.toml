@@ -1,0 +1,32 @@
+[package]
+name = "kamui-vrf"
+version = "0.1.0"
+description = "Anchor implementation of Kamui VRF (Verifiable Random Function) program"
+edition = "2021"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "kamui_vrf"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+mock = []
+idl-build = ["anchor-lang/idl-build"]
+compressed-accounts = []
+
+[dependencies]
+anchor-lang = "0.31.0"
+getrandom = { version = "0.2.12", features = ["js"] }
+sha3 = "0.10.8"
+num-bigint = "0.4.4"
+thiserror = "1.0.48"
+rand = "0.8.5"
+hex = "0.4.3"
+
+[dev-dependencies]
+anchor-spl = "0.31.0" 
