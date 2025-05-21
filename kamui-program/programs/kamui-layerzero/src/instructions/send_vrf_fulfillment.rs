@@ -116,12 +116,7 @@ pub fn handle(
             .ok_or(LayerZeroError::ArithmeticOverflow)?;
     }
     
-<<<<<<< HEAD
     // Get a mutable reference to the oapp
-=======
-    // We need to mutate the oapp after getting data from it
-    let mut oapp_data = ctx.accounts.oapp.to_account_info().data.borrow_mut();
->>>>>>> main
     let oapp_mut = &mut ctx.accounts.oapp;
 
     // Increment the nonce for the outbound message

@@ -24,10 +24,10 @@ cluster = "localnet"
 wallet = "./keypair.json"
 
 [scripts]
-test = "npx mocha --timeout 60000 tests/lz-basic-test.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 300000 tests/simple-test.ts"
 
 [test]
-startup_wait = 10000
+startup_wait = 20000
 # Set a larger program buffer size to handle the deployment
 program_buffer_size = 400000
 

@@ -4,3 +4,4 @@ oracle-keypair.json
 /target
 
 /node_modules
+.anchor
