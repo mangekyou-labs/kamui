@@ -36,7 +36,7 @@ pub struct SendVrfFulfillment<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<SendVrfFulfillment>,
+    ctx: &mut Context<SendVrfFulfillment>,
     dst_chain_id: u16,
     request_id: [u8; 32],
     randomness: [u8; 64],
@@ -116,8 +116,7 @@ pub fn handle(
             .ok_or(LayerZeroError::ArithmeticOverflow)?;
     }
     
-    // We need to mutate the oapp after getting data from it
-    let mut oapp_data = ctx.accounts.oapp.to_account_info().data.borrow_mut();
+    // Get a mutable reference to the oapp
     let oapp_mut = &mut ctx.accounts.oapp;
 
     // Increment the nonce for the outbound message

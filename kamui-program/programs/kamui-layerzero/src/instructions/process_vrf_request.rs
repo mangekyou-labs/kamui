@@ -24,10 +24,12 @@ pub struct ProcessVrfRequest<'info> {
     pub subscription: Account<'info, EnhancedSubscription>,
     
     /// The Kamui VRF request pool
+    /// CHECK: This account is validated in the CPI call to the Kamui VRF program
     #[account(mut)]
     pub request_pool: AccountInfo<'info>,
     
     /// The Kamui VRF request account that will be initialized
+    /// CHECK: This account is validated in the CPI call to the Kamui VRF program
     #[account(mut)]
     pub request: AccountInfo<'info>,
     
@@ -38,7 +40,7 @@ pub struct ProcessVrfRequest<'info> {
 }
 
 pub fn handle(
-    ctx: &Context<ProcessVrfRequest>,
+    ctx: &mut Context<ProcessVrfRequest>,
     seed: [u8; 32],
     callback_data: Vec<u8>,
     num_words: u32,

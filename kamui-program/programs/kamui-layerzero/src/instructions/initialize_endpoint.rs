@@ -29,7 +29,7 @@ pub struct InitializeEndpoint<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle(ctx: &Context<InitializeEndpoint>, authority_bump: u8) -> Result<()> {
+pub fn handle(ctx: &mut Context<InitializeEndpoint>, authority_bump: u8) -> Result<()> {
     let endpoint = &mut ctx.accounts.endpoint;
     endpoint.authority = ctx.accounts.payer.key();
     endpoint.authority_bump = authority_bump;

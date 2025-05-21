@@ -1,117 +1,100 @@
 #!/bin/bash
 
-# This script deploys the Kamui VRF programs to Solana devnet
+# Script to deploy Kamui VRF programs to devnet
+# This will build and deploy the programs and update the Anchor.toml file with the new program IDs
 
-# Set required environment variables
-export ANCHOR_PROVIDER_URL=https://api.devnet.solana.com
-export ANCHOR_WALLET=$(pwd)/keypair.json
+# Exit on error
+set -e
 
-# Default program IDs (can be overridden)
-KAMUI_VRF_PROGRAM_ID="BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D"
-KAMUI_VRF_CONSUMER_PROGRAM_ID="5gSZAw9aDQYGJABr6guQqPRFzyX656BSoiEdhHaUzyh6"
+# Color codes for terminal output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-# Parse command-line arguments
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --vrf-id) KAMUI_VRF_PROGRAM_ID="$2"; shift ;;
-        --consumer-id) KAMUI_VRF_CONSUMER_PROGRAM_ID="$2"; shift ;;
-        --skip-vrf) SKIP_VRF=true ;;
-        --skip-consumer) SKIP_CONSUMER=true ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
-    esac
-    shift
-done
+echo -e "${BLUE}=== Kamui VRF Devnet Deployment ===${NC}"
 
-# Get wallet public key
-WALLET_PUBKEY=$(solana address -k $ANCHOR_WALLET)
-
-# Check wallet balance
-echo "Checking wallet balance..."
-BALANCE=$(solana balance --url $ANCHOR_PROVIDER_URL -k $ANCHOR_WALLET | awk '{print $1}')
-echo "Current balance: $BALANCE SOL"
-
-REQUIRED_SOL=5.0
-if (( $(echo "$BALANCE < $REQUIRED_SOL" | bc -l) )); then
-    echo "Warning: Balance is less than $REQUIRED_SOL SOL, which may not be enough for deployment"
-    echo "Do you want to continue anyway? (y/n)"
-    read -r response
-    if [[ "$response" != "y" ]]; then
-        echo "Exiting. Please fund your account and try again."
-        exit 1
-    fi
+# Check if solana-keygen is installed
+if ! command -v solana-keygen &> /dev/null; then
+    echo -e "${RED}Error: solana-keygen is not installed.${NC}"
+    echo "Please install the Solana CLI tools: https://docs.solana.com/cli/install-solana-cli-tools"
+    exit 1
 fi
 
-echo "Building programs..."
+# Check if anchor is installed
+if ! command -v anchor &> /dev/null; then
+    echo -e "${RED}Error: anchor is not installed.${NC}"
+    echo "Please install Anchor: https://www.anchor-lang.com/docs/installation"
+    exit 1
+fi
+
+# Check if keypair.json exists, create it if it doesn't
+if [ ! -f keypair.json ]; then
+    echo -e "${YELLOW}No keypair.json found, creating a new one...${NC}"
+    solana-keygen new --no-bip39-passphrase -o keypair.json
+fi
+
+# Set Solana config to use devnet and the keypair
+echo -e "${BLUE}Setting Solana config to use devnet and keypair.json...${NC}"
+solana config set --url devnet --keypair keypair.json
+
+# Check balance
+BALANCE=$(solana balance | awk '{print $1}')
+echo -e "${BLUE}Current balance: ${BALANCE} SOL${NC}"
+
+# Request airdrop if balance is low
+if (( $(echo "$BALANCE < 1.0" | bc -l) )); then
+    echo -e "${YELLOW}Balance is low, requesting airdrop...${NC}"
+    solana airdrop 2
+    echo -e "${GREEN}New balance: $(solana balance | awk '{print $1}') SOL${NC}"
+fi
+
+# Build the programs
+echo -e "${BLUE}Building Kamui VRF programs...${NC}"
 anchor build
 
-# Deploy kamui_vrf program if not skipped
-if [ "$SKIP_VRF" != "true" ]; then
-    echo "Deploying kamui_vrf program..."
-    
-    if [ -n "$KAMUI_VRF_PROGRAM_ID" ]; then
-        echo "Using existing VRF program ID: $KAMUI_VRF_PROGRAM_ID"
-        
-        # Verify the program exists
-        if ! solana program show $KAMUI_VRF_PROGRAM_ID --url $ANCHOR_PROVIDER_URL &>/dev/null; then
-            echo "Error: Program ID $KAMUI_VRF_PROGRAM_ID doesn't exist on devnet"
-            exit 1
-        fi
-    else
-        # Deploy new VRF program
-        KAMUI_VRF_KEYPAIR="target/deploy/kamui_vrf-keypair.json"
-        if [ ! -f "$KAMUI_VRF_KEYPAIR" ]; then
-            echo "Error: $KAMUI_VRF_KEYPAIR not found. Build failed or file is missing."
-            exit 1
-        fi
+# Deploy the programs to devnet
+echo -e "${BLUE}Deploying programs to devnet...${NC}"
 
-        solana program deploy \
-            --keypair $ANCHOR_WALLET \
-            --program-id $KAMUI_VRF_KEYPAIR \
-            --url $ANCHOR_PROVIDER_URL \
-            target/deploy/kamui_vrf.so
+# Deploy Kamui VRF
+echo -e "${BLUE}Deploying Kamui VRF...${NC}"
+KAMUI_VRF_KEYPAIR="target/deploy/kamui_vrf-keypair.json"
+KAMUI_VRF_PROGRAM_ID=$(solana deploy --keypair $KAMUI_VRF_KEYPAIR | grep "Program Id" | awk '{print $3}')
+echo -e "${GREEN}Kamui VRF deployed with program ID: ${KAMUI_VRF_PROGRAM_ID}${NC}"
 
-        KAMUI_VRF_PROGRAM_ID=$(solana-keygen pubkey $KAMUI_VRF_KEYPAIR)
-        echo "kamui_vrf program deployed with ID: $KAMUI_VRF_PROGRAM_ID"
-    fi
-else
-    echo "Skipping kamui_vrf program deployment, using ID: $KAMUI_VRF_PROGRAM_ID"
-fi
+# Deploy Kamui VRF Consumer
+echo -e "${BLUE}Deploying Kamui VRF Consumer...${NC}"
+KAMUI_VRF_CONSUMER_KEYPAIR="target/deploy/kamui_vrf_consumer-keypair.json"
+KAMUI_VRF_CONSUMER_PROGRAM_ID=$(solana deploy --keypair $KAMUI_VRF_CONSUMER_KEYPAIR | grep "Program Id" | awk '{print $3}')
+echo -e "${GREEN}Kamui VRF Consumer deployed with program ID: ${KAMUI_VRF_CONSUMER_PROGRAM_ID}${NC}"
 
-# Deploy kamui_vrf_consumer program if not skipped
-if [ "$SKIP_CONSUMER" != "true" ]; then
-    echo "Deploying kamui_vrf_consumer program..."
-    
-    if [ -n "$KAMUI_VRF_CONSUMER_PROGRAM_ID" ]; then
-        echo "Using existing consumer program ID: $KAMUI_VRF_CONSUMER_PROGRAM_ID"
-        
-        # Verify the program exists
-        if ! solana program show $KAMUI_VRF_CONSUMER_PROGRAM_ID --url $ANCHOR_PROVIDER_URL &>/dev/null; then
-            echo "Error: Program ID $KAMUI_VRF_CONSUMER_PROGRAM_ID doesn't exist on devnet"
-            exit 1
-        fi
-    else
-        # Deploy new consumer program
-        KAMUI_VRF_CONSUMER_KEYPAIR="target/deploy/kamui_vrf_consumer-keypair.json"
-        if [ ! -f "$KAMUI_VRF_CONSUMER_KEYPAIR" ]; then
-            echo "Error: $KAMUI_VRF_CONSUMER_KEYPAIR not found. Build failed or file is missing."
-            exit 1
-        fi
+# Deploy Kamui LayerZero
+echo -e "${BLUE}Deploying Kamui LayerZero...${NC}"
+KAMUI_LAYERZERO_KEYPAIR="target/deploy/kamui_layerzero-keypair.json"
+KAMUI_LAYERZERO_PROGRAM_ID=$(solana deploy --keypair $KAMUI_LAYERZERO_KEYPAIR | grep "Program Id" | awk '{print $3}')
+echo -e "${GREEN}Kamui LayerZero deployed with program ID: ${KAMUI_LAYERZERO_PROGRAM_ID}${NC}"
 
-        solana program deploy \
-            --keypair $ANCHOR_WALLET \
-            --program-id $KAMUI_VRF_CONSUMER_KEYPAIR \
-            --url $ANCHOR_PROVIDER_URL \
-            target/deploy/kamui_vrf_consumer.so
+# Update Anchor.toml with the new program IDs
+echo -e "${BLUE}Updating Anchor.toml with new program IDs...${NC}"
 
-        KAMUI_VRF_CONSUMER_PROGRAM_ID=$(solana-keygen pubkey $KAMUI_VRF_CONSUMER_KEYPAIR)
-        echo "kamui_vrf_consumer program deployed with ID: $KAMUI_VRF_CONSUMER_PROGRAM_ID"
-    fi
-else
-    echo "Skipping kamui_vrf_consumer program deployment"
-fi
+# Create a backup of the original file
+cp Anchor.toml Anchor.toml.bak
 
-echo "Deployment complete!"
-echo "kamui_vrf program ID: $KAMUI_VRF_PROGRAM_ID"
-echo "kamui_vrf_consumer program ID: $KAMUI_VRF_CONSUMER_PROGRAM_ID"
-echo ""
-echo "Now update your Anchor.toml file with these program IDs under [programs.devnet]" 
+# Update program IDs in Anchor.toml
+sed -i '' "s/kamui_vrf = \"[^\"]*\"/kamui_vrf = \"$KAMUI_VRF_PROGRAM_ID\"/" Anchor.toml
+sed -i '' "s/kamui_vrf_consumer = \"[^\"]*\"/kamui_vrf_consumer = \"$KAMUI_VRF_CONSUMER_PROGRAM_ID\"/" Anchor.toml
+sed -i '' "s/kamui_layerzero = \"[^\"]*\"/kamui_layerzero = \"$KAMUI_LAYERZERO_PROGRAM_ID\"/" Anchor.toml
+
+echo -e "${GREEN}Anchor.toml updated with new program IDs.${NC}"
+echo -e "${BLUE}Original file backed up as Anchor.toml.bak${NC}"
+
+# Update ID files in the target directory
+echo -e "${BLUE}Updating program ID files...${NC}"
+echo $KAMUI_VRF_PROGRAM_ID > target/idl/kamui_vrf.json
+echo $KAMUI_VRF_CONSUMER_PROGRAM_ID > target/idl/kamui_vrf_consumer.json
+echo $KAMUI_LAYERZERO_PROGRAM_ID > target/idl/kamui_layerzero.json
+
+echo -e "${GREEN}Deployment complete! Program IDs updated in Anchor.toml.${NC}"
+echo -e "${BLUE}You can now run the devnet tests with:${NC}"
+echo -e "${YELLOW}npm run test:comprehensive-devnet${NC}" 
