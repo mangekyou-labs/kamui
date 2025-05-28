@@ -1,0 +1,1288 @@
+{
+  "address": "6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a",
+  "metadata": {
+    "name": "kamui_vrf",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) program"
+  },
+  "instructions": [
+    {
+      "name": "create_enhanced_subscription",
+      "discriminator": [
+        75,
+        228,
+        93,
+        239,
+        254,
+        201,
+        220,
+        235
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subscription",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  98,
+                  115,
+                  99,
+                  114,
+                  105,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "seed"
+              }
+            ]
+          }
+        },
+        {
+          "name": "seed"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "min_balance",
+          "type": "u64"
+        },
+        {
+          "name": "confirmations",
+          "type": "u8"
+        },
+        {
+          "name": "max_requests",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "fulfill_randomness",
+      "discriminator": [
+        235,
+        105,
+        140,
+        46,
+        40,
+        88,
+        117,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  114,
+                  102,
+                  95,
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "request_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vrf_result",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  114,
+                  102,
+                  95,
+                  114,
+                  101,
+                  115,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "request"
+              }
+            ]
+          }
+        },
+        {
+          "name": "request_pool",
+          "writable": true
+        },
+        {
+          "name": "subscription",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "proof",
+          "type": "bytes"
+        },
+        {
+          "name": "_public_key",
+          "type": "bytes"
+        },
+        {
+          "name": "request_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pool_id",
+          "type": "u8"
+        },
+        {
+          "name": "request_index",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "fund_subscription",
+      "discriminator": [
+        224,
+        196,
+        55,
+        110,
+        8,
+        87,
+        188,
+        114
+      ],
+      "accounts": [
+        {
+          "name": "funder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subscription",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_oracle_registry",
+      "discriminator": [
+        190,
+        92,
+        228,
+        114,
+        56,
+        71,
+        101,
+        220
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "min_stake",
+          "type": "u64"
+        },
+        {
+          "name": "rotation_frequency",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_request_pool",
+      "discriminator": [
+        179,
+        102,
+        255,
+        254,
+        232,
+        62,
+        64,
+        97
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subscription"
+        },
+        {
+          "name": "request_pool",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "pool_id",
+          "type": "u8"
+        },
+        {
+          "name": "max_size",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "register_oracle",
+      "discriminator": [
+        176,
+        200,
+        234,
+        37,
+        199,
+        129,
+        164,
+        111
+      ],
+      "accounts": [
+        {
+          "name": "oracle_authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "oracle_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "oracle_authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "vrf_key",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "stake_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "request_randomness",
+      "discriminator": [
+        213,
+        5,
+        173,
+        166,
+        37,
+        236,
+        31,
+        18
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "subscription",
+          "writable": true
+        },
+        {
+          "name": "request_pool",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "seed",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "callback_data",
+          "type": "bytes"
+        },
+        {
+          "name": "num_words",
+          "type": "u32"
+        },
+        {
+          "name": "minimum_confirmations",
+          "type": "u8"
+        },
+        {
+          "name": "callback_gas_limit",
+          "type": "u64"
+        },
+        {
+          "name": "pool_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "rotate_oracles",
+      "discriminator": [
+        23,
+        117,
+        113,
+        130,
+        185,
+        235,
+        89,
+        18
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "EnhancedOracle",
+      "discriminator": [
+        142,
+        152,
+        64,
+        24,
+        212,
+        126,
+        130,
+        253
+      ]
+    },
+    {
+      "name": "EnhancedSubscription",
+      "discriminator": [
+        161,
+        251,
+        15,
+        216,
+        114,
+        246,
+        92,
+        244
+      ]
+    },
+    {
+      "name": "OracleRegistry",
+      "discriminator": [
+        94,
+        153,
+        19,
+        250,
+        94,
+        0,
+        12,
+        172
+      ]
+    },
+    {
+      "name": "RandomnessRequest",
+      "discriminator": [
+        244,
+        231,
+        228,
+        160,
+        148,
+        28,
+        17,
+        184
+      ]
+    },
+    {
+      "name": "RequestPool",
+      "discriminator": [
+        49,
+        144,
+        171,
+        111,
+        172,
+        112,
+        31,
+        237
+      ]
+    },
+    {
+      "name": "VrfResult",
+      "discriminator": [
+        24,
+        254,
+        248,
+        67,
+        215,
+        198,
+        47,
+        144
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidConfirmations",
+      "msg": "The provided confirmations are invalid"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidMaxRequests",
+      "msg": "The provided maximum requests value is invalid"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAmount",
+      "msg": "The provided amount is invalid"
+    },
+    {
+      "code": 6003,
+      "name": "ArithmeticOverflow",
+      "msg": "Arithmetic overflow occurred"
+    },
+    {
+      "code": 6004,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidPoolSize",
+      "msg": "Invalid pool size specified"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidPoolSubscription",
+      "msg": "Invalid pool subscription"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidPoolId",
+      "msg": "Invalid pool ID"
+    },
+    {
+      "code": 6008,
+      "name": "TooManyRequests",
+      "msg": "Too many active requests"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientFunds",
+      "msg": "Insufficient subscription funds"
+    },
+    {
+      "code": 6010,
+      "name": "PoolCapacityExceeded",
+      "msg": "Request pool capacity exceeded"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidWordCount",
+      "msg": "Invalid word count requested"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidGasLimit",
+      "msg": "Invalid gas limit"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidRequestId",
+      "msg": "Invalid request ID"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidRequestIndex",
+      "msg": "Invalid request index"
+    },
+    {
+      "code": 6015,
+      "name": "RequestNotPending",
+      "msg": "Request is not in pending state"
+    },
+    {
+      "code": 6016,
+      "name": "ProofVerificationFailed",
+      "msg": "VRF proof verification failed"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidVrfKey",
+      "msg": "Invalid VRF key"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidSubscriptionOwner",
+      "msg": "Invalid subscription owner"
+    },
+    {
+      "code": 6019,
+      "name": "RequestAlreadyFulfilled",
+      "msg": "Request is already fulfilled"
+    },
+    {
+      "code": 6020,
+      "name": "RequestExpired",
+      "msg": "Request has expired"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidStakeAmount",
+      "msg": "Invalid stake amount"
+    },
+    {
+      "code": 6022,
+      "name": "InsufficientStake",
+      "msg": "Insufficient stake"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidRotationFrequency",
+      "msg": "Invalid rotation frequency"
+    },
+    {
+      "code": 6024,
+      "name": "OracleNotActive",
+      "msg": "Oracle not active"
+    },
+    {
+      "code": 6025,
+      "name": "BatchLimitExceeded",
+      "msg": "Batch request limit exceeded"
+    }
+  ],
+  "types": [
+    {
+      "name": "EnhancedOracle",
+      "docs": [
+        "Enhanced oracle with stake and reputation"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "The oracle's authority"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "vrf_key",
+            "docs": [
+              "The oracle's VRF public key"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "stake_amount",
+            "docs": [
+              "Staked amount"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "reputation",
+            "docs": [
+              "Reputation score (successful fulfillments)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "last_active",
+            "docs": [
+              "Last active slot"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "docs": [
+              "Whether the oracle is active"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "fulfillment_count",
+            "docs": [
+              "Number of successful fulfillments"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "failure_count",
+            "docs": [
+              "Number of failed fulfillments"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EnhancedSubscription",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "The owner of this subscription"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "balance",
+            "docs": [
+              "Current balance for VRF requests"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "min_balance",
+            "docs": [
+              "Minimum balance required for requests"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "confirmations",
+            "docs": [
+              "Number of confirmations required before generating VRF proof"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "active_requests",
+            "docs": [
+              "Number of active requests"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "max_requests",
+            "docs": [
+              "Maximum allowed concurrent requests"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "request_counter",
+            "docs": [
+              "Current request counter (for generating unique IDs)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "request_keys",
+            "docs": [
+              "Truncated hashes of active request keys for quick lookup"
+            ],
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  16
+                ]
+              }
+            }
+          },
+          {
+            "name": "pool_ids",
+            "docs": [
+              "Associated request pool IDs"
+            ],
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OracleRegistry",
+      "docs": [
+        "Oracle registry for managing multiple oracles"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "Admin authority"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_count",
+            "docs": [
+              "Current number of active oracles"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "min_stake",
+            "docs": [
+              "Minimum stake amount required"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "rotation_frequency",
+            "docs": [
+              "Slots between oracle rotation"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "last_rotation",
+            "docs": [
+              "Last slot when oracles were rotated"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "oracles",
+            "docs": [
+              "List of oracle public keys"
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RandomnessRequest",
+      "docs": [
+        "Detailed request data for processing"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subscription",
+            "docs": [
+              "The subscription this request belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "docs": [
+              "The seed used for randomness"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "requester",
+            "docs": [
+              "The requester's program ID that will receive the callback"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "callback_data",
+            "docs": [
+              "The callback function data"
+            ],
+            "type": "bytes"
+          },
+          {
+            "name": "request_slot",
+            "docs": [
+              "Block number when request was made"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Status of the request"
+            ],
+            "type": {
+              "defined": {
+                "name": "RequestStatus"
+              }
+            }
+          },
+          {
+            "name": "num_words",
+            "docs": [
+              "Number of random words requested"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "callback_gas_limit",
+            "docs": [
+              "Maximum compute units for callback"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pool_id",
+            "docs": [
+              "Request pool ID"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "request_index",
+            "docs": [
+              "Request index in pool"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "request_id",
+            "docs": [
+              "Unique request identifier"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestEntry",
+      "docs": [
+        "Request entry for storage in pools"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "index",
+            "docs": [
+              "Request index"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "data",
+            "docs": [
+              "Request summary data"
+            ],
+            "type": {
+              "defined": {
+                "name": "RequestSummary"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestPool",
+      "docs": [
+        "Request Pool - organized by subscription"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "subscription",
+            "docs": [
+              "The subscription this pool belongs to"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pool_id",
+            "docs": [
+              "Pool identifier"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "request_count",
+            "docs": [
+              "Current number of requests in the pool"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "max_size",
+            "docs": [
+              "Maximum capacity of this pool"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "request_entries",
+            "docs": [
+              "List of request summaries in the pool"
+            ],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "RequestEntry"
+                }
+              }
+            }
+          },
+          {
+            "name": "last_processed_slot",
+            "docs": [
+              "Last slot this pool was processed"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pending"
+          },
+          {
+            "name": "Fulfilled"
+          },
+          {
+            "name": "Cancelled"
+          },
+          {
+            "name": "Expired"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestSummary",
+      "docs": [
+        "Compact request summary for storage in pools"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "requester",
+            "docs": [
+              "The requestor's program ID"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "seed_hash",
+            "docs": [
+              "Hash of the original seed (for verification)"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "docs": [
+              "Timestamp of request creation"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "Current status of the request"
+            ],
+            "type": {
+              "defined": {
+                "name": "RequestStatus"
+              }
+            }
+          },
+          {
+            "name": "request_slot",
+            "docs": [
+              "Block height when request was made"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "callback_gas_limit",
+            "docs": [
+              "Callback gas limit"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VrfResult",
+      "docs": [
+        "VRF result data"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "randomness",
+            "docs": [
+              "The randomness outputs"
+            ],
+            "type": {
+              "vec": {
+                "array": [
+                  "u8",
+                  64
+                ]
+              }
+            }
+          },
+          {
+            "name": "proof",
+            "docs": [
+              "The VRF proof"
+            ],
+            "type": "bytes"
+          },
+          {
+            "name": "proof_slot",
+            "docs": [
+              "Block number when proof was generated"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "request_id",
+            "docs": [
+              "Request ID this result is for"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

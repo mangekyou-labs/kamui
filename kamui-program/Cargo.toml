@@ -14,16 +14,17 @@ no-log-ix-name = []
 cpi = ["no-entrypoint"]
 default = []
 test-bpf = []
-mock = ["rand", "solana-sdk", "solana-client", "solana-program-test", "hex", "serde_json", "tokio", "clap", "futures-util", "env_logger"]
+mock = ["mangekyou", "rand", "solana-sdk", "solana-client", "solana-program-test", "hex", "serde_json", "tokio", "clap", "futures-util", "env_logger"]
 
 [dependencies]
 solana-program = { workspace = true }
-borsh = "1.2.1"
-borsh-derive = "1.2.1"
+borsh = "0.10"
 thiserror = "1.0"
-anchor-spl = { workspace = true }
+spl-token = { version = "4.0", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "2.0.0", features = ["no-entrypoint"] }
 sha2 = "0.10"
 base64 = "0.21"
+mangekyou = { path = "../mangekyou", optional = true }
 rand = { version = "0.8", optional = true }
 solana-sdk = { workspace = true, optional = true }
 solana-client = { workspace = true, optional = true }
@@ -46,24 +47,51 @@ solana-program-test = { workspace = true }
 tokio = { version = "1.0", features = ["full", "test-util"] }
 rand = "0.8"
 serde_json = "1.0"
+mangekyou = { path = "../mangekyou" }
 hex = "0.4"
+anchor-lang = { workspace = true }
+borsh = "0.10"
+
+[[bin]]
+name = "mock-prover"
+path = "src/bin/mock_prover.rs"
+required-features = ["mock"]
+
+[[bin]]
+name = "vrf-server"
+path = "src/bin/vrf_server.rs"
+required-features = ["mock"]
+
+[[bin]]
+name = "transfer-sol"
+path = "src/bin/transfer_sol.rs"
+required-features = ["mock"]
+
+[[bin]]
+name = "real-vrf-server"
+path = "src/bin/real_vrf_server.rs"
+required-features = ["mock"]
+
+[[bin]]
+name = "generate-real-vrf-proof"
+path = "tests/generate_real_vrf_proof.rs"
+required-features = ["mock"]
 
 [workspace]
 members = [
     "programs/kamui-vrf",
     "programs/kamui-vrf-consumer",
-    "programs/kamui-layerzero",
 ]
 resolver = "2"
 
 [workspace.dependencies]
-solana-program = "=2.1.0"
-solana-zk-token-sdk = "=2.1.0"
-solana-sdk = "=2.1.0"
-solana-program-test = "=2.1.0"
-solana-client = "=2.1.0"
-anchor-lang = "=0.31.0"
-anchor-spl = "=0.31.0"
+solana-program = "=1.17.2"
+solana-zk-token-sdk = "=1.17.2"
+solana-sdk = "=1.17.2"
+solana-program-test = "=1.17.2"
+solana-client = "=1.17.2"
+anchor-lang = "=0.31.1"
+anchor-spl = "=0.31.1"
 
 [profile.release]
 overflow-checks = true
@@ -76,6 +104,3 @@ overflow-checks = true
 
 [profile.test]
 overflow-checks = true
-
-[patch.crates-io]
-proc-macro2 = { git = "https://github.com/dtolnay/proc-macro2", tag = "1.0.60" }

@@ -1,11 +1,29 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::pubkey::Pubkey;
 
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct VerifyVrfInput {
     pub alpha_string: Vec<u8>,
     pub proof_bytes: Vec<u8>,
     pub public_key_bytes: Vec<u8>,
+}
+
+impl VerifyVrfInput {
+    pub fn is_valid(&self) -> bool {
+        !self.alpha_string.is_empty() && 
+        !self.proof_bytes.is_empty() &&
+        !self.public_key_bytes.is_empty()
+    }
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct VerifyVrfInputZeroCopy {
+    pub alpha_string: [u8; 64],
+    pub alpha_len: u8,
+    pub proof_bytes: [u8; 80],
+    pub public_key_bytes: [u8; 32],
+    pub _padding: [u8; 7],
 }
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]

@@ -1,47 +1,31 @@
 {
   "name": "kamui-vrf",
   "version": "0.1.0",
-  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system with LayerZero integration",
+  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system",
+  "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "test": "anchor test",
-    "test:anchor": "ANCHOR_WALLET=./keypair.json anchor test",
-    "test:layerzero": "anchor test tests/layerzero-vrf-integration.ts",
-    "test:simple": "npx ts-mocha -p ./tsconfig.json -t 120000 tests/simple-test.ts",
-    "test:minimal": "npx ts-mocha -p ./tsconfig.json -t 120000 tests/minimal-vrf-test.ts",
-    "test:devnet": "npx ts-mocha -p ./tsconfig.json -t 120000 tests/devnet-vrf-test.ts",
-    "test:simple-devnet": "npx ts-mocha -p ./tsconfig.json -t 120000 tests/simple-devnet-test.ts",
-    "test:micro": "npx ts-mocha -p ./tsconfig.json -t 120000 tests/micro-vrf-test.ts",
-    "test:vrf-all": "npm run test:simple-devnet && npm run test:minimal && npm run test:micro && npm run test:comprehensive-devnet",
-    "test:comprehensive-devnet": "npx ts-mocha -p ./tsconfig.json -t 300000 tests/comprehensive-devnet-test.ts",
-    "build": "anchor build",
-    "direct-test": "./run-test.sh"
+    "build": "anchor build"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.31.0",
-    "@layerzerolabs/solidity-examples": "^0.0.13",
-    "@openzeppelin/contracts": "^4.8.0",
-    "@solana/spl-account-compression": "^0.4.1",
+    "@coral-xyz/borsh": "^0.31.1",
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.78.4",
-    "borsh": "^0.7.0",
-    "bs58": "^5.0.0"
+    "@solana/web3.js": "^1.78.4"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "@coral-xyz/anchor": "^0.31.1",
     "@types/bn.js": "^5.1.0",
-    "@types/chai": "^4.3.20",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.11.18",
-    "chai": "^4.5.0",
-    "dotenv": "^16.0.3",
-    "hardhat": "^2.12.6",
-    "mocha": "^10.8.2",
+    "@types/chai": "^5.2.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.15.21",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tweetnacl": "^1.0.3",
-    "typescript": "^4.9.5"
+    "typescript": "5.3.3"
   },
-  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72",
-  "license": "MIT"
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }

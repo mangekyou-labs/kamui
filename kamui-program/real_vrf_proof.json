@@ -1,0 +1,10 @@
+{
+  "proof_bytes": "2491dbd1af9523ca58c1f7a406eb7383069ac79666fde0a31f77a650ac1e587b7243642ddbdcfcf3f66ccb8228d557c576ec24b6f20e9da8d10c8d809c6c3914f3effec1e13a81d077f9a890c274790a",
+  "alpha_string": "Hello, world!",
+  "alpha_length": "13",
+  "proof_length": "80",
+  "public_key_bytes": "c2443eb9d8fcf2a0f0563f2ccff73b74c967710be334501992845ad948d1784b",
+  "vrf_output": "21e5546b522e29d68e94735627f8db4e371273dfaed69af734deef437598d9b9581e0b0361ace505acf28a7a5512199bb57fb2d23466f381f9cefe2dc50e5093",
+  "alpha_bytes": "48656c6c6f2c20776f726c6421",
+  "public_key_length": "32"
+}

@@ -5,3 +5,12 @@ oracle-keypair.json
 
 /node_modules
 .anchor
+/test-ledger
+
+/keypairs
+
+tests/anchor/node_modules
+tests/anchor/target
+tests/anchor/keypairs
+
+

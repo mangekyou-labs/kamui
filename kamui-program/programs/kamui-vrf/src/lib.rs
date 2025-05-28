@@ -3,7 +3,7 @@ use anchor_lang::{
     solana_program::keccak,
 };
 
-declare_id!("BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D"); // Use existing program ID
+declare_id!("6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a"); // Devnet deployed ID
 
 pub mod state;
 pub mod errors;
@@ -163,18 +163,11 @@ pub mod kamui_vrf {
         
         // Add pool ID to subscription
         if !subscription.pool_ids.contains(&pool_id) {
-            // Create a mutable copy for updating
-            let subscription_account_info = ctx.accounts.subscription.to_account_info();
-            let mut subscription_data = subscription_account_info.try_borrow_mut_data()?;
-            let mut subscription_ref = EnhancedSubscription::try_deserialize(&mut &subscription_data[..])?;
-            
-            // Add the pool ID if not already present
-            if !subscription_ref.pool_ids.contains(&pool_id) {
-                subscription_ref.pool_ids.push(pool_id);
+            // Update subscription directly through the mutable reference
+            let subscription_mut = &mut ctx.accounts.subscription;
+            if !subscription_mut.pool_ids.contains(&pool_id) {
+                subscription_mut.pool_ids.push(pool_id);
             }
-            
-            // Serialize the updated subscription back into the account
-            subscription_ref.try_serialize(&mut *subscription_data)?;
         }
         
         Ok(())

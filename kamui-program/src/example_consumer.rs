@@ -10,10 +10,11 @@ use {
         sysvar::{Sysvar, rent::Rent},
     },
     std::str::FromStr,
-    crate::{
-        state::{Subscription, VrfResult},
-        instruction::VrfCoordinatorInstruction,
-    },
+    // Commented out to avoid conflicts with Anchor implementation
+    // crate::{
+    //     state::{Subscription, VrfResult},
+    //     instruction::VrfCoordinatorInstruction,
+    // },
 };
 
 #[cfg(feature = "mock")]

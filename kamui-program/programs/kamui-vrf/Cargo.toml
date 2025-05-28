@@ -17,10 +17,9 @@ cpi = ["no-entrypoint"]
 default = []
 mock = []
 idl-build = ["anchor-lang/idl-build"]
-compressed-accounts = []
 
 [dependencies]
-anchor-lang = "0.31.0"
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }
 getrandom = { version = "0.2.12", features = ["js"] }
 sha3 = "0.10.8"
 num-bigint = "0.4.4"
@@ -28,5 +27,4 @@ thiserror = "1.0.48"
 rand = "0.8.5"
 hex = "0.4.3"
 
-[dev-dependencies]
-anchor-spl = "0.31.0" 
+[dev-dependencies] 
