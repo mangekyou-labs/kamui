@@ -1,17 +1,22 @@
 {
   "name": "kamui-vrf",
   "version": "0.1.0",
-  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system",
+  "description": "Anchor implementation of Kamui VRF (Verifiable Random Function) system with ZK Compression",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
     "test": "anchor test",
-    "build": "anchor build"
+    "build": "anchor build",
+    "test-compressed": "ts-node compressed-vrf-devnet-test.ts",
+    "test-devnet": "ts-node devnet-working-test.ts"
   },
   "dependencies": {
     "@coral-xyz/borsh": "^0.31.1",
+    "@lightprotocol/compressed-token": "^0.21.0",
+    "@lightprotocol/stateless.js": "^0.21.0",
     "@solana/spl-token": "^0.3.8",
-    "@solana/web3.js": "^1.78.4"
+    "@solana/web3.js": "^1.78.4",
+    "bn.js": "^5.2.1"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",
