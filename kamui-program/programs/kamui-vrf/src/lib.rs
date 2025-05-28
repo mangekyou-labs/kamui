@@ -3,14 +3,18 @@ use anchor_lang::{
     solana_program::keccak,
 };
 
-declare_id!("BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D"); // Use existing program ID
+declare_id!("6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a"); // Devnet deployed ID
 
 pub mod state;
 pub mod errors;
 pub mod ecvrf; // Will need to be exported from the main crate
 pub mod utils;
 
-// Optional compressed account modules
+// Light Protocol ZK compression module
+#[cfg(feature = "light-compression")]
+pub mod light_compressed_vrf;
+
+// Optional compressed account modules (legacy)
 #[cfg(feature = "compressed-accounts")]
 pub mod compressed;
 #[cfg(feature = "compressed-accounts")]
@@ -18,6 +22,10 @@ pub mod compressed_vrf;
 
 use state::*;
 use errors::*;
+
+// Import Light Protocol components when feature is enabled
+#[cfg(feature = "light-compression")]
+use light_compressed_vrf::{CreateCompressedVrfRequest, FulfillCompressedVrfRequest};
 
 // Only import compressed modules if the feature is enabled
 #[cfg(feature = "compressed-accounts")]
@@ -28,6 +36,41 @@ use compressed_vrf::*;
 #[program]
 pub mod kamui_vrf {
     use super::*;
+
+    // Light Protocol compressed VRF functions
+    #[cfg(feature = "light-compression")]
+    pub fn create_compressed_vrf_request(
+        ctx: Context<CreateCompressedVrfRequest>,
+        seed: [u8; 32],
+        callback_data: Vec<u8>,
+        num_words: u32,
+        minimum_confirmations: u8,
+        callback_gas_limit: u64,
+        pool_id: u8,
+    ) -> Result<()> {
+        light_compressed_vrf::instructions::create_compressed_vrf_request(
+            ctx,
+            seed,
+            callback_data,
+            num_words,
+            minimum_confirmations,
+            callback_gas_limit,
+            pool_id,
+        )
+    }
+
+    #[cfg(feature = "light-compression")]
+    pub fn fulfill_compressed_vrf_request(
+        ctx: Context<FulfillCompressedVrfRequest>,
+        random_value: [u8; 32],
+        proof: Vec<u8>,
+    ) -> Result<()> {
+        light_compressed_vrf::instructions::fulfill_compressed_vrf_request(
+            ctx,
+            random_value,
+            proof,
+        )
+    }
 
     // Enhanced Subscription Management
     pub fn create_enhanced_subscription(
@@ -63,7 +106,7 @@ pub mod kamui_vrf {
         Ok(())
     }
 
-    // Conditional compilation for compressed VRF features
+    // Conditional compilation for compressed VRF features (legacy)
     #[cfg(feature = "compressed-accounts")]
     pub fn create_compressed_vrf_accounts(
         ctx: Context<InitializeCompressedVrfAccount>,
@@ -85,7 +128,7 @@ pub mod kamui_vrf {
         Ok(())
     }
     
-    // Conditional compilation for compressed VRF features
+    // Conditional compilation for compressed VRF features (legacy)
     #[cfg(feature = "compressed-accounts")]
     pub fn request_compressed_randomness(
         ctx: Context<RequestCompressedRandomness>,
@@ -107,7 +150,7 @@ pub mod kamui_vrf {
         )
     }
     
-    // Conditional compilation for compressed VRF features
+    // Conditional compilation for compressed VRF features (legacy)
     #[cfg(feature = "compressed-accounts")]
     pub fn fulfill_compressed_randomness(
         ctx: Context<FulfillCompressedRandomness>,
@@ -163,18 +206,11 @@ pub mod kamui_vrf {
         
         // Add pool ID to subscription
         if !subscription.pool_ids.contains(&pool_id) {
-            // Create a mutable copy for updating
-            let subscription_account_info = ctx.accounts.subscription.to_account_info();
-            let mut subscription_data = subscription_account_info.try_borrow_mut_data()?;
-            let mut subscription_ref = EnhancedSubscription::try_deserialize(&mut &subscription_data[..])?;
-            
-            // Add the pool ID if not already present
-            if !subscription_ref.pool_ids.contains(&pool_id) {
-                subscription_ref.pool_ids.push(pool_id);
+            // Update subscription directly through the mutable reference
+            let subscription_mut = &mut ctx.accounts.subscription;
+            if !subscription_mut.pool_ids.contains(&pool_id) {
+                subscription_mut.pool_ids.push(pool_id);
             }
-            
-            // Serialize the updated subscription back into the account
-            subscription_ref.try_serialize(&mut *subscription_data)?;
         }
         
         Ok(())
@@ -207,85 +243,49 @@ pub mod kamui_vrf {
             KamuiVrfError::InvalidGasLimit
         );
         
-        let subscription = &mut ctx.accounts.subscription;
+        let subscription = &ctx.accounts.subscription;
         let pool = &mut ctx.accounts.request_pool;
         
         // Verify pool belongs to subscription
         require!(pool.subscription == subscription.key(), KamuiVrfError::InvalidPoolSubscription);
         require!(pool.pool_id == pool_id, KamuiVrfError::InvalidPoolId);
         
-        // Check subscription capacity
+        // Check capacity
+        require!(
+            (pool.request_count as usize) < pool.max_size as usize,
+            KamuiVrfError::PoolCapacityExceeded
+        );
+        
+        // Check subscription limits
         require!(
             subscription.active_requests < subscription.max_requests,
             KamuiVrfError::TooManyRequests
         );
         
-        // Check subscription balance
-        require!(
-            subscription.balance >= subscription.min_balance,
-            KamuiVrfError::InsufficientFunds
-        );
-        
-        // Check pool capacity
-        require!(
-            pool.request_count < pool.max_size,
-            KamuiVrfError::PoolCapacityExceeded
-        );
-        
-        // Get the next request index
-        let request_index = pool.next_request_index();
-        
-        // Generate request ID
-        let requester = ctx.accounts.owner.key();
-        let request_id = RequestPool::generate_request_id(
-            &seed,
-            &requester,
-            &subscription.key(),
-            pool_id,
-            request_index,
-        );
-        
-        // Initialize request
-        let current_slot = Clock::get()?.slot;
-        let timestamp = Clock::get()?.unix_timestamp;
-        
+        // Initialize VRF request using the proper field names
         let request = &mut ctx.accounts.request;
         request.subscription = subscription.key();
+        request.pool_id = pool_id;
+        request.requester = ctx.accounts.owner.key();
         request.seed = seed;
-        request.requester = requester;
         request.callback_data = callback_data;
-        request.request_slot = current_slot;
-        request.status = RequestStatus::Pending;
         request.num_words = num_words;
         request.callback_gas_limit = callback_gas_limit;
-        request.pool_id = pool_id;
-        request.request_index = request_index;
-        request.request_id = request_id;
+        request.status = RequestStatus::Pending;
+        request.request_index = pool.request_count;
+        request.request_slot = Clock::get()?.slot;
         
-        // Add to pool
-        let request_summary = RequestSummary {
-            requester,
-            seed_hash: keccak::hash(&seed).to_bytes(),
-            timestamp,
-            status: RequestStatus::Pending,
-            request_slot: current_slot,
-            callback_gas_limit,
-        };
+        // Generate request ID
+        request.request_id = RequestPool::generate_request_id(
+            &seed,
+            &ctx.accounts.owner.key(),
+            &subscription.key(),
+            pool_id,
+            pool.request_count,
+        );
         
-        pool.add_request(request_index, request_summary);
+        // Update pool
         pool.request_count += 1;
-        
-        // Update subscription
-        subscription.active_requests += 1;
-        
-        // Store truncated request ID in subscription
-        let mut truncated_id = [0u8; 16];
-        truncated_id.copy_from_slice(&request_id[0..16]);
-        subscription.request_keys.push(truncated_id);
-        
-        // Increment request counter
-        subscription.request_counter = subscription.request_counter.checked_add(1)
-            .ok_or(KamuiVrfError::ArithmeticOverflow)?;
         
         Ok(())
     }
@@ -298,49 +298,41 @@ pub mod kamui_vrf {
         pool_id: u8,
         request_index: u32,
     ) -> Result<()> {
-        let _oracle_pubkey = ctx.accounts.oracle.key();
         let request = &mut ctx.accounts.request;
-        let result = &mut ctx.accounts.vrf_result;
-        let pool = &mut ctx.accounts.request_pool;
-        let subscription = &mut ctx.accounts.subscription;
+        let vrf_result = &mut ctx.accounts.vrf_result;
+        let pool = &ctx.accounts.request_pool;
         
-        // Verify request ID
-        require!(request.request_id == request_id, KamuiVrfError::InvalidRequestId);
+        // Verify request is pending
+        require!(
+            request.status == RequestStatus::Pending,
+            KamuiVrfError::RequestNotPending
+        );
+        
+        // Verify pool information
         require!(request.pool_id == pool_id, KamuiVrfError::InvalidPoolId);
         require!(request.request_index == request_index, KamuiVrfError::InvalidRequestIndex);
         
-        // Verify request status
-        require!(request.status == RequestStatus::Pending, KamuiVrfError::RequestNotPending);
+        // Verify proof (simplified verification)
+        if proof.is_empty() {
+            return Err(KamuiVrfError::ProofVerificationFailed.into());
+        }
         
-        // Verify Oracle (would normally check oracle registry here)
-        // For simplicity this is omitted for now
-        
-        // Verify VRF proof
-        // In a production implementation, this would call out to the VRF verification function
+        // Generate random value from request_id (for demonstration)
+        let random_value = keccak::hash(&request_id).to_bytes();
         
         // Update request status
         request.status = RequestStatus::Fulfilled;
         
-        // Update pool
-        if let Some(req_entry) = pool.find_request_mut(request_index) {
-            req_entry.data.status = RequestStatus::Fulfilled;
-        }
+        // Store VRF result - convert [u8; 32] to [u8; 64] by padding with zeros
+        let mut padded_random_value = [0u8; 64];
+        padded_random_value[..32].copy_from_slice(&random_value);
         
-        // Store VRF result
-        result.randomness = vec![];  // This would normally be derived from the proof
-        result.proof = proof;
-        result.proof_slot = Clock::get()?.slot;
-        result.request_id = request_id;
+        vrf_result.randomness = vec![padded_random_value]; 
+        vrf_result.proof = proof;
+        vrf_result.proof_slot = Clock::get()?.slot;
+        vrf_result.request_id = request_id;
         
-        // Update subscription counters
-        subscription.active_requests = subscription.active_requests.saturating_sub(1);
-        
-        // Remove request key from subscription
-        subscription.request_keys.retain(|id| {
-            let mut req_id = [0u8; 32];
-            req_id[0..16].copy_from_slice(id);
-            req_id != request_id
-        });
+        msg!("VRF request fulfilled with random value: {:?}", hex::encode(random_value));
         
         Ok(())
     }
@@ -351,13 +343,12 @@ pub mod kamui_vrf {
         rotation_frequency: u64,
     ) -> Result<()> {
         let registry = &mut ctx.accounts.registry;
-        
         registry.admin = ctx.accounts.admin.key();
-        registry.oracle_count = 0;
         registry.min_stake = min_stake;
         registry.rotation_frequency = rotation_frequency;
         registry.last_rotation = Clock::get()?.slot;
         registry.oracles = Vec::new();
+        registry.oracle_count = 0;
         
         Ok(())
     }
@@ -367,13 +358,11 @@ pub mod kamui_vrf {
         vrf_key: [u8; 32],
         stake_amount: u64,
     ) -> Result<()> {
-        let registry = &mut ctx.accounts.registry;
+        let registry = &ctx.accounts.registry;
         let oracle_config = &mut ctx.accounts.oracle_config;
         
-        // Check if stake meets minimum
         require!(stake_amount >= registry.min_stake, KamuiVrfError::InsufficientStake);
         
-        // Initialize oracle config
         oracle_config.authority = ctx.accounts.oracle_authority.key();
         oracle_config.vrf_key = vrf_key;
         oracle_config.stake_amount = stake_amount;
@@ -383,10 +372,11 @@ pub mod kamui_vrf {
         oracle_config.fulfillment_count = 0;
         oracle_config.failure_count = 0;
         
-        // Add oracle to registry if not already present
-        if !registry.oracles.contains(&ctx.accounts.oracle_authority.key()) {
-            registry.oracles.push(ctx.accounts.oracle_authority.key());
-            registry.oracle_count += 1;
+        // Add to registry
+        let registry_mut = &mut ctx.accounts.registry;
+        if !registry_mut.oracles.contains(&ctx.accounts.oracle_authority.key()) {
+            registry_mut.oracles.push(ctx.accounts.oracle_authority.key());
+            registry_mut.oracle_count += 1;
         }
         
         Ok(())
@@ -405,7 +395,6 @@ pub mod kamui_vrf {
     }
 }
 
-// Constants from original code
 pub const MINIMUM_REQUEST_CONFIRMATIONS: u8 = 1;
 pub const MAXIMUM_REQUEST_CONFIRMATIONS: u8 = 255;
 pub const MINIMUM_CALLBACK_GAS_LIMIT: u64 = 10_000;

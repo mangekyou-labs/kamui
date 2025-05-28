@@ -13,7 +13,7 @@ use {
     std::{str::FromStr, fs::File, io::Read},
     mangekyou::{
         kamui_vrf::{
-            ecvrf::ECVRFKeyPair,
+            ecvrf::{ECVRFKeyPair, ECVRFProof},
             VRFKeyPair,
             VRFProof,
         },
@@ -21,13 +21,69 @@ use {
     kamui_program::instruction::VerifyVrfInput,
     rand::thread_rng,
     hex,
+    serde_json,
+    std::collections::HashMap,
 };
 
-#[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+// FIXED: Add function to generate and output real ECVRF proof for TypeScript
+fn generate_real_vrf_proof_for_typescript() {
+    println!("🔑 Generating REAL ECVRF proof for TypeScript test...");
+    
+    // Use the EXACT same alpha string as the working devnet_test.rs
+    let alpha_string = "Hello, world!";
+    let alpha_bytes = alpha_string.as_bytes();
+    
+    println!("🌱 Alpha string: \"{}\" ({} bytes)", alpha_string, alpha_bytes.len());
+    
+    // Generate a real ECVRF keypair
+    let keypair = ECVRFKeyPair::generate(&mut thread_rng());
+    let public_key_bytes = keypair.pk.as_ref().to_vec();
+    
+    println!("🔑 Generated ECVRF keypair");
+    println!("🔑 Public key: {}", hex::encode(&public_key_bytes));
+    
+    // Generate the real ECVRF proof using the correct API
+    let (output, proof) = keypair.output(alpha_bytes);
+    let proof_bytes = proof.to_bytes();
+    
+    println!("🎲 Generated REAL ECVRF proof");
+    println!("🎲 Proof length: {} bytes", proof_bytes.len());
+    println!("🎲 Proof: {}", hex::encode(&proof_bytes));
+    println!("🎲 Output: {}", hex::encode(&output));
+    
+    // Note: Local verification would require implementing the verify method
+    println!("✅ Proof generated successfully (verification requires on-chain test)");
+    
+    // Create JSON output for TypeScript
+    let mut output_map = HashMap::new();
+    output_map.insert("alpha_string", alpha_string.to_string());
+    output_map.insert("alpha_bytes", hex::encode(alpha_bytes));
+    output_map.insert("proof_bytes", hex::encode(&proof_bytes));
+    output_map.insert("public_key_bytes", hex::encode(&public_key_bytes));
+    output_map.insert("vrf_output", hex::encode(&output));
+    output_map.insert("proof_length", proof_bytes.len().to_string());
+    output_map.insert("public_key_length", public_key_bytes.len().to_string());
+    output_map.insert("alpha_length", alpha_bytes.len().to_string());
+    
+    // Output as JSON for TypeScript to consume
+    let json_output = serde_json::to_string_pretty(&output_map).unwrap();
+    println!("\n📋 JSON OUTPUT FOR TYPESCRIPT:");
+    println!("{}", json_output);
+    
+    // Also save to file
+    std::fs::write("real_vrf_proof.json", json_output).expect("Failed to write JSON file");
+    println!("\n💾 Saved to real_vrf_proof.json");
+    
+    println!("\n🎯 Use this REAL ECVRF proof in your TypeScript test!");
+}
+
+#[tokio::test]
 async fn test_vrf_verification_devnet() {
-    // Connect to devnet
-    let rpc_url = "https://api.devnet.solana.com".to_string();
-    let rpc_client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    // First generate the real VRF proof for TypeScript
+    generate_real_vrf_proof_for_typescript();
+    
+    // Continue with the original test...
+    let client = RpcClient::new("https://api.devnet.solana.com".to_string());
 
     // Use the deployed program ID
     let program_id = Pubkey::from_str("4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y").unwrap();
@@ -42,7 +98,7 @@ async fn test_vrf_verification_devnet() {
     println!("Using keypair with pubkey: {}", payer.pubkey());
     
     // Verify the balance
-    let balance = rpc_client.get_balance(&payer.pubkey()).expect("Failed to get balance");
+    let balance = client.get_balance(&payer.pubkey()).expect("Failed to get balance");
     println!("Current balance: {} SOL", balance as f64 / 1_000_000_000.0);
 
     if balance == 0 {
@@ -91,7 +147,7 @@ async fn test_vrf_verification_devnet() {
     );
 
     // Get recent blockhash
-    let recent_blockhash = rpc_client
+    let recent_blockhash = client
         .get_latest_blockhash()
         .expect("Failed to get recent blockhash");
 
@@ -107,7 +163,7 @@ async fn test_vrf_verification_devnet() {
     println!("Sending transaction to verify VRF proof...");
     
     // Send and confirm transaction
-    let signature = rpc_client
+    let signature = client
         .send_and_confirm_transaction_with_spinner(&transaction)
         .expect("Failed to send and confirm transaction");
 

@@ -3,52 +3,43 @@ seeds = false
 skip-lint = false
 
 [toolchain]
-anchor_version = "0.31.0"
-solana_version = "2.1.22"
-
-[programs.devnet]
-kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
-kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
-kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
+anchor_version = "0.31.1"
+solana_version = "2.1.21"
 
 [programs.localnet]
 kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
 kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
-kamui_layerzero = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs"
+
+[programs.devnet]
+kamui_vrf = "6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a"
+kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
-wallet = "./keypair.json"
+cluster = "devnet"
+wallet = "./keypairs/keypair.json"
 
 [scripts]
-test = "npx ts-mocha -p ./tsconfig.json -t 300000 tests/simple-test.ts"
+test = "cd tests/anchor && yarn run ts-mocha --require ts-node/register --require tsconfig-paths/register -p ./tsconfig.json -t 1000000 tests/real-kamui-vrf-test.ts"
 
 [test]
-startup_wait = 20000
-# Set a larger program buffer size to handle the deployment
-program_buffer_size = 400000
+startup_wait = 10000
 
 [test.validator]
 url = "https://api.devnet.solana.com"
 
 [[test.genesis]]
-address = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
+address = "6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a"
 program = "target/deploy/kamui_vrf.so"
 
 [[test.genesis]]
-address = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y" 
+address = "2Pd6R21gGNJgrfxHQPegcXgwmSd5MY1uHBYrNAtYgPbE" 
 program = "target/deploy/kamui_vrf_consumer.so"
-
-[[test.genesis]]
-address = "9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs" 
-program = "target/deploy/kamui_layerzero.so"
 
 [workspace]
 members = [
     "programs/kamui-vrf",
     "programs/kamui-vrf-consumer",
-    "programs/kamui-layerzero",
 ] 

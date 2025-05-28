@@ -79,4 +79,23 @@ pub enum KamuiVrfError {
     
     #[msg("Batch request limit exceeded")]
     BatchLimitExceeded,
+    
+    // Light Protocol compression errors
+    #[msg("Light compression feature not enabled")]
+    FeatureNotEnabled,
+    
+    #[msg("Invalid compressed account")]
+    InvalidCompressedAccount,
+    
+    #[msg("Compressed account not found")]
+    CompressedAccountNotFound,
+    
+    #[msg("Invalid proof")]
+    InvalidProof,
+    
+    #[msg("Merkle tree operation failed")]
+    MerkleTreeFailed,
+    
+    #[msg("Compression initialization failed")]
+    CompressionInitFailed,
 } 

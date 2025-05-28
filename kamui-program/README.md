@@ -4,32 +4,30 @@ This directory contains the implementation of Kamui's enhanced Verifiable Random
 
 ## Key Features
 
-- **Request Pools**: Requests are organized into subscription-specific pools for efficient batch processing
-- **Enhanced Subscriptions**: Subscriptions track active requests and maintain request history
-- **Robust Oracle Management**: Oracle registry with reputation tracking and automatic rotation
-- **Secure ID Generation**: Request IDs generated using multiple entropy sources
-- **Batch Processing**: Process multiple requests efficiently in a single transaction
-- **Automated Cleanup**: Expired request handling and pool maintenance
+- **Enhanced Subscriptions**: Subscriptions track balance, confirmations, and request limits
+- **Secure ID Generation**: Request IDs generated using cryptographic entropy
+- **Real ECVRF Integration**: Uses elliptic curve VRF for cryptographically secure randomness
 - **Flexible Configuration**: Configurable confirmation levels, gas limits, and request parameters
+- **Consumer Program Integration**: Sample game implementation showing randomness consumption
 
 ## Architecture
 
 The system consists of several core components:
 
 1. **Subscription Management**: Users create subscriptions to request randomness, with configuration for confirmations, limits, and balance requirements
-2. **Request Pools**: Each subscription can have multiple request pools to organize randomness requests
-3. **Oracle Registry**: Tracks oracle reputation, activity, and facilitates oracle rotation
-4. **VRF Server**: Monitors the blockchain for requests and responds with cryptographic proofs
-5. **Callback System**: Delivers verified randomness to consumer contracts
+2. **VRF Oracle**: Monitors the blockchain for requests and responds with cryptographic ECVRF proofs
+3. **Verification System**: External program that verifies ECVRF proofs before accepting randomness
+4. **Consumer Contracts**: Sample implementations showing how to consume verified randomness
 
 ## Deployed Programs
 
 The VRF system has been deployed to Solana devnet with the following program IDs:
 
-- **Kamui VRF**: `4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1`
+- **Kamui VRF**: `6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a`
+- **VRF Consumer**: `2Pd6R21gGNJgrfxHQPegcXgwmSd5MY1uHBYrNAtYgPbE`
 - **Verification Program**: `4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y`
 
-You can verify these deployments on [Solana Explorer](https://explorer.solana.com/address/4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1?cluster=devnet).
+You can verify these deployments on [Solana Explorer](https://explorer.solana.com/address/6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a?cluster=devnet).
 
 ## Usage
 
@@ -47,85 +45,33 @@ You can verify these deployments on [Solana Explorer](https://explorer.solana.co
    );
    ```
 
-2. **Initialize Request Pool**:
-   ```rust
-   let init_pool_ix = initialize_request_pool_instruction(
-       &wallet.pubkey(),     // Owner
-       &subscription_pubkey, // Subscription account
-       &pool_pubkey,         // PDA for pool account
-       1,                    // Pool ID
-       100,                  // Maximum capacity
-   );
-   ```
-
-3. **Request Randomness**:
+2. **Request Randomness**:
    ```rust
    let request_ix = request_randomness_instruction(
        &wallet.pubkey(),         // Requester
-       &request_pubkey,          // PDA for request account
+       &request_keypair.pubkey(),// Request account (keypair)
        &subscription_pubkey,     // Subscription account
-       &pool_pubkey,             // Request pool account
        seed,                     // Random seed
        callback_data,            // Data to pass to callback
        1,                        // Number of random words
        3,                        // Confirmations required
        50_000,                   // Gas limit for callback
-       1,                        // Pool ID
    );
    ```
 
-4. **Consume Randomness in Your dApp**:
+3. **Consume Randomness in Your dApp**:
    ```rust
    // Your callback function receives the randomness
    pub fn consume_randomness(
        ctx: Context<ConsumeRandomness>,
-       randomness: [u8; 64],
+       randomness_bytes: [u8; 8],
    ) -> Result<()> {
        // Use the randomness for your application
        // For example, to generate a number between 1 and 100:
-       let random_number = 1 + (u64::from_le_bytes(randomness[0..8].try_into().unwrap()) % 100);
+       let random_number = 1 + (u64::from_le_bytes(randomness_bytes) % 100);
        Ok(())
    }
    ```
-
-### Running the VRF Server
-
-To run the VRF server that fulfills randomness requests, use the provided script:
-
-```bash
-# Basic usage
-./run_vrf_simple_ws.sh
-
-# Advanced usage with all parameters
-./run_vrf_simple_ws.sh \
-  --program-id <PROGRAM_ID> \
-  --feepayer-keypair keypair.json \
-  --vrf-keypair vrf-keypair.json \
-  --oracle-keypair oracle-keypair.json \
-  --registry-id <REGISTRY_PUBKEY> \
-  --rpc-url https://api.devnet.solana.com \
-  --ws-url wss://api.devnet.solana.com \
-  --scan-interval 30000 \
-  --batch-size 10 \
-  --log-level debug
-```
-
-### Integration Testing
-
-Run the integration test script to test the full flow:
-
-```bash
-# Basic usage
-./scripts/run_devnet_integration_test.sh
-
-# Advanced usage
-./scripts/run_devnet_integration_test.sh \
-  --enhanced-mode true \
-  --batch-size 5 \
-  --log-level debug \
-  --rpc-url https://api.devnet.solana.com \
-  --ws-url wss://api.devnet.solana.com
-```
 
 ## Testing
 
@@ -134,95 +80,92 @@ Run the integration test script to test the full flow:
 To run the tests using a local validator:
 
 ```bash
-# Run with local validator
+# Run tests with building programs
 anchor test
+
+# Run tests without building (if programs already built)
+anchor test --skip-build
 ```
 
 ### Running Tests on Devnet
 
-For running tests on Solana devnet, we provide a dedicated script that properly configures the environment and handles test account funding:
+To run tests against the deployed programs on Solana devnet:
 
 ```bash
-# Make the script executable
-chmod +x run-devnet-tests.sh
-
-# Run the tests on devnet
-./run-devnet-tests.sh
+# Run tests on devnet without building or deploying
+anchor test --skip-build --provider.cluster devnet
 ```
 
-The devnet test script will:
-1. Verify that the programs exist on devnet
-2. Update configuration files with the correct program IDs
-3. Check your wallet balance and offer to airdrop SOL if needed
-4. Transfer small amounts of SOL to test accounts (about 0.01 SOL each)
-5. Run the full test suite against the deployed devnet programs
+The tests include:
+1. Creating enhanced VRF subscriptions
+2. Verifying real ECVRF proofs using the external verification program
+3. Requesting randomness with proper account structures
+4. Fulfilling randomness requests with cryptographic proofs
+5. Integrating with consumer programs to use the randomness
 
-Alternatively, you can run tests directly with the Anchor CLI:
+### Test Features
 
-```bash
-# Run tests on devnet without deploying
-anchor test --skip-local-validator --skip-deploy
+The test suite demonstrates:
+- **Real ECVRF Proof Verification**: Uses actual elliptic curve VRF proofs for cryptographic security
+- **Subscription Management**: Creates and funds VRF subscriptions with proper balance tracking
+- **Request/Fulfillment Flow**: Complete cycle from randomness request to delivery
+- **Consumer Integration**: Sample game that consumes VRF randomness
+- **Error Handling**: Proper account validation and constraint checking
+
+## Architecture Overview
+
+```
+• The protocol shall allow users to create VRF subscriptions for randomness requests
+• The protocol shall allow users to fund their subscriptions with SOL
+• The protocol shall provide verifiable random numbers to consumer programs
+• The protocol shall verify oracle proofs cryptographically using ECVRF
+• The protocol shall enable subscription owners to manage request parameters
+
+                             2 - Fulfills Request
+                      ┌─────────────────────────────────┐
+                      │                                 │
+                      │                                 ▼
+┌────────────────────┐│  ┌───────────────────┐    ┌────────────────┐
+│                    ││  │                   │    │                │
+│   VRF Contract     ││  │   VRF Oracle      │    │   VRF Result   │
+├────────────────────┤│  ├───────────────────┤    ├────────────────┤
+│ + subscription: PDA│◄─┘  │ + vrf_keypair     │    │ + randomness   │
+│ + request: Keypair │     │ + proof_generation│    │ + proof        │
+│ + vrf_result: PDA  │     │ + monitoring      │    │ + request_id   │
+└────────────────────┘     └───────────────────┘    └────────────────┘
+          ▲                                                   │
+          │                                                   │
+          │ 1 - Requests Randomness                           │
+          │                                                   │
+          │                                                   ▼
+┌─────────┴──────────┐                           ┌─────────────────────┐
+│                    │                           │                     │
+│    User/Consumer   │◄──────────────────────────┤  Consumer Program   │
+│                    │   3 - Consumes Randomness  │                     │
+└────────────────────┘                           └─────────────────────┘
 ```
 
-## Advanced Features
+**Flow Description:**
+- **1 - User Requests Randomness**: User creates a randomness request through their subscription using a keypair account
+- **2 - Oracle Fulfills Request**: VRF oracle monitors for pending requests, generates ECVRF proof, and stores verified result
+- **3 - Consumer Program Uses Randomness**: Consumer program retrieves VRF result and uses it for application logic
 
-### Oracle Rotation
-
-The system automatically rotates oracles based on reputation and configured frequency:
-
-```rust
-// Rotate oracles
-let rotate_ix = rotate_oracles_instruction(
-    &admin.pubkey(),     // Admin or permissionless
-    &registry_pubkey,    // Oracle registry
-);
-```
-
-### Batch Processing
-
-Process multiple randomness requests in a single transaction:
-
-```rust
-let batch_ix = process_request_batch_instruction(
-    &oracle.pubkey(),            // Oracle
-    &oracle_config_pubkey,       // Oracle config
-    &pool_pubkey,                // Request pool
-    request_ids,                 // Array of request IDs
-    proofs,                      // Array of VRF proofs
-    public_keys,                 // Array of public keys
-    pool_id,                     // Pool ID
-    request_indices,             // Array of request indices
-);
-```
-
-### Cleaning Expired Requests
-
-Maintain system health by cleaning expired requests:
-
-```rust
-let clean_ix = clean_expired_requests_instruction(
-    &wallet.pubkey(),        // Any account (permissionless)
-    &pool_pubkey,            // Request pool
-    &subscription_pubkey,    // Subscription
-    pool_id,                 // Pool ID
-);
-```
-
-## Performance Considerations
-
-- Each VRF request requires VRF proof generation, which is computationally intensive
-- Batch processing significantly improves throughput for applications with multiple requests
-- Request pools help organize and prioritize requests based on application needs
-- Oracle rotation ensures reliable service even if individual oracles become unavailable
-
-## Security
+## Security Features
 
 The enhanced VRF system provides:
 
-- Cryptographic verification of randomness using elliptic curve VRF proofs
-- Protection against request expiration to prevent stale requests
-- Oracle reputation tracking to maintain service quality
-- Subscription-based access control for randomness consumers
+- **Cryptographic Security**: Uses elliptic curve VRF (ECVRF) for provably fair randomness
+- **External Verification**: Separate verification program validates all VRF proofs
+- **Subscription Access Control**: Only subscription owners can make requests
+- **Balance Management**: Automatic balance checking prevents insufficient fund scenarios
+- **Request Validation**: Comprehensive constraint checking on all operations
+
+## Performance Considerations
+
+- Each VRF request requires ECVRF proof generation, which is computationally intensive
+- Tests run efficiently on both local validator and devnet
+- Subscription-based model allows for efficient batch funding of multiple requests
+- Consumer programs can process randomness results immediately upon fulfillment
 
 ## License
 

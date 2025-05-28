@@ -432,8 +432,6 @@ pub struct FulfillRandomness<'info> {
     
     #[account(
         mut,
-        seeds = [b"vrf_request", &request_id],
-        bump,
         constraint = request.request_id == request_id,
         constraint = request.status == RequestStatus::Pending
     )]

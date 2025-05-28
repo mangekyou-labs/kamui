@@ -2,17 +2,29 @@
 	"ts-node": {
 		"compilerOptions": {
 			"module": "commonjs"
-		}
+		},
+		"transpileOnly": false
 	},
 	"compilerOptions": {
-		"typeRoots": ["./node_modules/@types"],
+		"typeRoots": [
+			"./node_modules/@types"
+		],
 		"module": "commonjs",
 		"noEmit": true,
 		"esModuleInterop": true,
 		"strict": false,
 		"strictNullChecks": false,
-		"target": "es6"
+		"target": "es6",
+		"resolveJsonModule": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	},
-	"include": ["tests/**/*", "cli.ts"],
-	"exclude": ["target", "lib"]
+	"include": [
+		"tests/**/*",
+		"cli.ts"
+	],
+	"exclude": [
+		"target",
+		"lib"
+	]
 }

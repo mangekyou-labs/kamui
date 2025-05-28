@@ -2,17 +2,25 @@
     "compilerOptions": {
         "types": [
             "mocha",
-            "chai"
+            "chai",
+            "node"
         ],
         "typeRoots": [
             "./node_modules/@types"
         ],
         "lib": [
-            "es2015"
+            "es2020",
+            "dom"
         ],
         "module": "commonjs",
-        "target": "es6",
+        "target": "es2020",
         "esModuleInterop": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "baseUrl": ".",
+        "paths": {
+            "../../../../target/types/*": [
+                "../../target/types/*"
+            ]
+        }
     }
 }

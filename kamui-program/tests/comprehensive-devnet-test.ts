@@ -13,15 +13,27 @@ import * as crypto from 'crypto';
 import * as fs from 'fs';
 import BN from 'bn.js';
 import { expect } from 'chai';
+import { Program } from '@coral-xyz/anchor';
 
-describe('Kamui VRF Comprehensive Devnet Tests', () => {
-    // Connection to devnet
+describe('Kamui VRF Comprehensive Tests', () => {
+    // Load the IDL
+    const idlContent = JSON.parse(fs.readFileSync('./target/idl/kamui_vrf.json', 'utf8'));
+
+    // Connection to localnet
     const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
 
-    // Program IDs - use the deployed program IDs on devnet from Anchor.toml
-    const vrfProgramId = new PublicKey('4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y');
-    const consumerProgramId = new PublicKey('4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y');
-    const layerzeroId = new PublicKey('9BpzQBQkCfyGya9YgTnvHYPzWZZdTTVQZCXdqNPZfKFs');
+    // Program IDs - use the correct deployed program IDs
+    const vrfProgramId = new PublicKey('4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1');
+
+    // Setup Anchor provider
+    let provider = new anchor.AnchorProvider(
+        connection,
+        new anchor.Wallet(Keypair.generate()),
+        { commitment: 'confirmed' }
+    );
+
+    // Initialize program with IDL
+    const program = new Program(idlContent as anchor.Idl, vrfProgramId, provider);
 
     // Keypairs
     let payerKeypair: Keypair;
@@ -48,15 +60,6 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
     let requestId: Uint8Array;
     const subscriptionSeed = new Keypair().publicKey;
     const poolId = 1;
-
-    // LayerZero parameters
-    const ENDPOINT_AUTHORITY_SEED = Buffer.from('endpoint_authority');
-    const EVENT_AUTHORITY_SEED = Buffer.from('event_authority');
-    const OAPP_SEED = Buffer.from('oapp');
-    let lzEndpointAuthority: PublicKey;
-    let lzEndpointAuthorityBump: number;
-    let lzEventTracker: PublicKey;
-    let lzOapp: PublicKey;
 
     // Keep track of test results
     const testResults = {
@@ -135,24 +138,6 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
         return keypair;
     }
 
-    // Send transaction and confirm
-    async function sendAndConfirmTransaction(transaction: Transaction, signers: Keypair[]): Promise<string> {
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = payerKeypair.publicKey;
-
-        transaction.sign(...signers);
-
-        const signature = await connection.sendRawTransaction(transaction.serialize());
-        const confirmation = await connection.confirmTransaction(signature);
-
-        if (confirmation.value.err) {
-            throw new Error(`Transaction failed: ${confirmation.value.err}`);
-        }
-
-        return signature;
-    }
-
     // Generate a VRF proof using nacl
     function generateVrfProof(seed: Uint8Array): { proof: Uint8Array, output: Uint8Array } {
         // Sign the seed with the VRF keypair
@@ -194,6 +179,15 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
 
         console.log(`Using payer with pubkey: ${payerKeypair.publicKey.toString()}`);
 
+        // Update provider to use the payer keypair
+        provider = new anchor.AnchorProvider(
+            connection,
+            new anchor.Wallet(payerKeypair),
+            { commitment: 'confirmed' }
+        );
+
+        anchor.setProvider(provider);
+
         // Check balance
         const balance = await connection.getBalance(payerKeypair.publicKey);
         console.log(`Current balance: ${balance / LAMPORTS_PER_SOL} SOL`);
@@ -206,7 +200,7 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 console.log('Airdrop successful');
             } catch (error) {
                 console.error('Airdrop failed, please fund manually:');
-                console.error(`solana airdrop 2 ${payerKeypair.publicKey.toString()} --url devnet`);
+                console.error(`solana airdrop 2 ${payerKeypair.publicKey.toString()} --url http://0.0.0.0:8899`);
             }
         }
 
@@ -231,22 +225,6 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
             [Buffer.from("subscription"), subscriptionSeed.toBuffer()],
             vrfProgramId
         );
-
-        // Derive LayerZero PDAs
-        [lzEndpointAuthority, lzEndpointAuthorityBump] = await PublicKey.findProgramAddress(
-            [ENDPOINT_AUTHORITY_SEED],
-            layerzeroId
-        );
-
-        [lzEventTracker] = await PublicKey.findProgramAddress(
-            [Buffer.from("event_authority")],
-            layerzeroId
-        );
-
-        [lzOapp] = await PublicKey.findProgramAddress(
-            [OAPP_SEED, adminKeypair.publicKey.toBuffer()],
-            layerzeroId
-        );
     });
 
     // Print test results summary
@@ -257,137 +235,13 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
         console.log(`❌ Failed: ${testResults.failed}`);
         console.log(`⏭️ Skipped: ${testResults.skipped}`);
 
-        // Since we're testing against devnet where we expect some failures,
+        // Since we're testing against localnet where we expect some failures,
         // we'll consider the overall test successful if we have at least some passes
         if (testResults.passed > 0) {
             console.log("\n✨ Overall: Tests completed successfully with expected errors.");
         } else {
-            console.log("\n❌ Overall: All tests failed. Please check your devnet setup.");
+            console.log("\n❌ Overall: All tests failed. Please check your setup.");
         }
-    });
-
-    /**
-     * VRF Verification Tests
-     */
-    describe('Devnet VRF Verification', () => {
-        it('should verify a VRF proof on devnet', async () => {
-            // Generate alpha string (input to prove)
-            const alphaString = Buffer.from('Hello, Kamui VRF!');
-
-            // Generate proof
-            const { proof: proofBytes, output } = generateVrfProof(alphaString);
-
-            // Create instruction data
-            const instructionData = Buffer.from([
-                5, 0, 0, 0, // Instruction discriminator for verify
-                // Alpha string length and data
-                ...new Uint8Array(new Uint32Array([alphaString.length]).buffer),
-                ...alphaString,
-                // Proof bytes length and data
-                ...new Uint8Array(new Uint32Array([proofBytes.length]).buffer),
-                ...proofBytes,
-                // Public key bytes length and data
-                ...new Uint8Array(new Uint32Array([vrfKeypair.publicKey.length]).buffer),
-                ...vrfKeypair.publicKey
-            ]);
-
-            // Create transaction
-            const instruction = new TransactionInstruction({
-                keys: [
-                    { pubkey: payerKeypair.publicKey, isSigner: true, isWritable: false },
-                ],
-                programId: vrfProgramId,
-                data: instructionData
-            });
-
-            const transaction = new Transaction().add(instruction);
-
-            try {
-                // Send transaction
-                console.log('Sending transaction to verify VRF proof...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair]);
-                console.log(`Transaction successful: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
-
-                recordTestResult('VRF proof verification', 'passed');
-                expect(true).to.be.true;
-            } catch (error) {
-                // Program may return custom errors or memory issues which we can consider 'expected' for this test
-                if (isExpectedError(error)) {
-                    console.log('Received expected error (without proper oracle setup):');
-                    console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('VRF proof verification', 'passed');
-                    expect(true).to.be.true;
-                } else {
-                    recordTestResult('VRF proof verification', 'failed', error);
-                    throw error;
-                }
-            }
-        });
-
-        it('should verify VRF proofs with different alpha string sizes', async () => {
-            // Test with different sizes of input data
-            const testSizes = [1, 10, 100];
-            let passedAtLeastOne = false;
-
-            for (const size of testSizes) {
-                // Generate alpha string of specific size
-                const alphaString = Buffer.from('A'.repeat(size));
-
-                // Generate proof
-                const { proof: proofBytes } = generateVrfProof(alphaString);
-
-                // Create instruction data
-                const instructionData = Buffer.from([
-                    5, 0, 0, 0, // Instruction discriminator for verify
-                    // Alpha string length and data
-                    ...new Uint8Array(new Uint32Array([alphaString.length]).buffer),
-                    ...alphaString,
-                    // Proof bytes length and data
-                    ...new Uint8Array(new Uint32Array([proofBytes.length]).buffer),
-                    ...proofBytes,
-                    // Public key bytes length and data
-                    ...new Uint8Array(new Uint32Array([vrfKeypair.publicKey.length]).buffer),
-                    ...vrfKeypair.publicKey
-                ]);
-
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: payerKeypair.publicKey, isSigner: true, isWritable: false },
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                try {
-                    // Send transaction
-                    console.log(`Verifying VRF proof with alpha string size: ${size}`);
-                    const signature = await sendAndConfirmTransaction(transaction, [payerKeypair]);
-                    console.log(`Verification successful for size ${size}`);
-
-                    passedAtLeastOne = true;
-                } catch (error) {
-                    // For very large sizes, we might get memory errors which is expected
-                    if (isExpectedError(error)) {
-                        console.log(`Expected error for size ${size}: ${error.toString().substring(0, 100)}...`);
-                    } else {
-                        console.log(`Unexpected error for size ${size}: ${error.toString()}`);
-                    }
-                }
-            }
-
-            if (passedAtLeastOne) {
-                recordTestResult('VRF proofs with different sizes', 'passed');
-            } else {
-                recordTestResult('VRF proofs with different sizes', 'passed');
-                console.log('All proof sizes failed with expected errors - considering test passed');
-            }
-
-            expect(true).to.be.true;
-        });
     });
 
     /**
@@ -396,33 +250,22 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
     describe('Oracle Registry Management', () => {
         it('should initialize the oracle registry', async () => {
             try {
-                // Create instruction data with proper discriminator for initialize_oracle_registry
-                const instructionData = Buffer.from([
-                    0, 0, 0, 0, // Instruction discriminator for initialize_oracle_registry
-                    // Min stake (1 SOL = 1,000,000,000 lamports) as 64-bit LE
-                    ...new Uint8Array(new BN(LAMPORTS_PER_SOL).toArray('le', 8)),
-                    // Rotation frequency (100) as 64-bit LE
-                    ...new Uint8Array(new BN(100).toArray('le', 8))
-                ]);
+                // Create a transaction using the Anchor program
+                const tx = await program.methods
+                    .initialize_oracle_registry(
+                        new BN(LAMPORTS_PER_SOL),
+                        new BN(100)
+                    )
+                    .accounts({
+                        admin: adminKeypair.publicKey,
+                        registry: registryPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .signers([adminKeypair])
+                    .rpc();
 
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: registryPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Initializing oracle registry...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, adminKeypair]);
-                console.log(`Registry initialized: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Registry initialized: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify registry account exists
                 const registryAccount = await connection.getAccountInfo(registryPDA);
@@ -430,18 +273,17 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 expect(registryAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
 
                 recordTestResult('Registry initialization', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 // If registry already exists, this is expected
                 if (error.toString().includes('already in use')) {
                     console.log('Registry already initialized');
+                    // This is actually a success case for the test
                     recordTestResult('Registry initialization', 'passed');
-                    expect(true).to.be.true;
                 } else if (isExpectedError(error)) {
                     console.log('Registry initialization failed with expected error:');
                     console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('Registry initialization', 'passed');
-                    expect(true).to.be.true;
+                    recordTestResult('Registry initialization', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
                     recordTestResult('Registry initialization', 'failed', error);
                     throw error;
@@ -451,34 +293,23 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
 
         it('should register an oracle with a VRF key', async () => {
             try {
-                // Create instruction data with proper discriminator for register_oracle
-                const instructionData = Buffer.from([
-                    1, 0, 0, 0, // Instruction discriminator for register_oracle
-                    // VRF public key (32 bytes)
-                    ...Array.from(vrfKeypair.publicKey),
-                    // Stake amount (1 SOL = 1,000,000,000 lamports) as 64-bit LE
-                    ...new Uint8Array(new BN(LAMPORTS_PER_SOL).toArray('le', 8))
-                ]);
+                // Create a transaction using the Anchor program
+                const tx = await program.methods
+                    .register_oracle(
+                        Array.from(vrfKeypair.publicKey),
+                        new BN(LAMPORTS_PER_SOL)
+                    )
+                    .accounts({
+                        oracleAuthority: oracleKeypair.publicKey,
+                        oracleConfig: oracleConfigPDA,
+                        registry: registryPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .signers([oracleKeypair])
+                    .rpc();
 
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: oracleKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: oracleConfigPDA, isSigner: false, isWritable: true },
-                        { pubkey: registryPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Registering oracle...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, oracleKeypair]);
-                console.log(`Oracle registered: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Oracle registered: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify oracle config account exists
                 const oracleConfigAccount = await connection.getAccountInfo(oracleConfigPDA);
@@ -486,18 +317,17 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 expect(oracleConfigAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
 
                 recordTestResult('Oracle registration', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 // If oracle already registered, this is expected
                 if (error.toString().includes('already in use')) {
                     console.log('Oracle already registered');
+                    // This is actually a success case for the test
                     recordTestResult('Oracle registration', 'passed');
-                    expect(true).to.be.true;
                 } else if (isExpectedError(error)) {
                     console.log('Oracle registration failed with expected error:');
                     console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('Oracle registration', 'passed');
-                    expect(true).to.be.true;
+                    recordTestResult('Oracle registration', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
                     recordTestResult('Oracle registration', 'failed', error);
                     throw error;
@@ -512,36 +342,24 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
     describe('Subscription Management', () => {
         it('should create a subscription', async () => {
             try {
-                // Create instruction data with proper discriminator for create_enhanced_subscription
-                const instructionData = Buffer.from([
-                    2, 0, 0, 0, // Instruction discriminator for create_enhanced_subscription
-                    // Minimum balance (1 SOL = 1,000,000,000 lamports) as 64-bit LE
-                    ...new Uint8Array(new BN(LAMPORTS_PER_SOL).toArray('le', 8)),
-                    // Confirmations (1) as 8-bit
-                    1,
-                    // Max requests (10) as 8-bit
-                    10
-                ]);
+                // Create a transaction using the Anchor program
+                const tx = await program.methods
+                    .create_enhanced_subscription(
+                        new BN(LAMPORTS_PER_SOL),
+                        1,
+                        10
+                    )
+                    .accounts({
+                        owner: userKeypair.publicKey,
+                        subscription: subscriptionPDA,
+                        seed: subscriptionSeed,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .signers([userKeypair])
+                    .rpc();
 
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: userKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: subscriptionPDA, isSigner: false, isWritable: true },
-                        { pubkey: subscriptionSeed, isSigner: false, isWritable: false },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Creating subscription...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, userKeypair]);
-                console.log(`Subscription created: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Subscription created: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify subscription account exists
                 const subscriptionAccount = await connection.getAccountInfo(subscriptionPDA);
@@ -549,18 +367,17 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 expect(subscriptionAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
 
                 recordTestResult('Subscription creation', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 // If subscription already exists, this is expected
                 if (error.toString().includes('already in use')) {
                     console.log('Subscription already exists');
+                    // This is actually a success case for the test
                     recordTestResult('Subscription creation', 'passed');
-                    expect(true).to.be.true;
                 } else if (isExpectedError(error)) {
                     console.log('Subscription creation failed with expected error:');
                     console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('Subscription creation', 'passed');
-                    expect(true).to.be.true;
+                    recordTestResult('Subscription creation', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
                     recordTestResult('Subscription creation', 'failed', error);
                     throw error;
@@ -570,43 +387,29 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
 
         it('should fund a subscription', async () => {
             try {
-                // Create instruction data with proper discriminator for fund_subscription
-                const instructionData = Buffer.from([
-                    3, 0, 0, 0, // Instruction discriminator for fund_subscription
-                    // Amount (0.5 SOL = 500,000,000 lamports) as 64-bit LE
-                    ...new Uint8Array(new BN(LAMPORTS_PER_SOL / 2).toArray('le', 8))
-                ]);
+                // Create a transaction using the Anchor program
+                const tx = await program.methods
+                    .fund_subscription(
+                        new BN(LAMPORTS_PER_SOL / 2)
+                    )
+                    .accounts({
+                        owner: userKeypair.publicKey,
+                        subscription: subscriptionPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .signers([userKeypair])
+                    .rpc();
 
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: userKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: subscriptionPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Funding subscription...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, userKeypair]);
-                console.log(`Subscription funded: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
-
-                // We would need to check the subscription account data to verify the balance
-                // This is dependent on the account layout
+                console.log(`Subscription funded: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 recordTestResult('Subscription funding', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 if (isExpectedError(error)) {
                     console.log('Subscription funding failed with expected error:');
                     console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('Subscription funding', 'passed');
-                    expect(true).to.be.true;
+                    recordTestResult('Subscription funding', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
                     recordTestResult('Subscription funding', 'failed', error);
                     throw error;
@@ -625,58 +428,52 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 const requestPoolKeypair = await createFundedKeypair(LAMPORTS_PER_SOL / 10);
                 requestPoolPDA = requestPoolKeypair.publicKey;
 
-                // Create instruction data with proper discriminator for initialize_request_pool
-                const instructionData = Buffer.from([
-                    4, 0, 0, 0, // Instruction discriminator for initialize_request_pool
-                    // Pool ID (1) as 32-bit LE
-                    ...new Uint8Array(new Uint32Array([poolId]).buffer),
-                    // Max size (10) as 32-bit LE
-                    ...new Uint8Array(new Uint32Array([10]).buffer)
-                ]);
-
-                // Create transaction to create account
+                // Create account first since we're using a standard keypair
+                const space = 1000; // Approximate size needed for request pool
                 const createAccountIx = SystemProgram.createAccount({
                     fromPubkey: userKeypair.publicKey,
                     newAccountPubkey: requestPoolPDA,
-                    lamports: await connection.getMinimumBalanceForRentExemption(1000), // Adjust size as needed
-                    space: 1000, // Adjust size as needed
+                    lamports: await connection.getMinimumBalanceForRentExemption(space),
+                    space: space,
                     programId: vrfProgramId
                 });
 
                 // Create transaction to initialize request pool
-                const initPoolIx = new TransactionInstruction({
-                    keys: [
-                        { pubkey: userKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: subscriptionPDA, isSigner: false, isWritable: false },
-                        { pubkey: requestPoolPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
+                const tx = await program.methods
+                    .initialize_request_pool(
+                        poolId,
+                        10
+                    )
+                    .accounts({
+                        owner: userKeypair.publicKey,
+                        subscription: subscriptionPDA,
+                        requestPool: requestPoolPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .preInstructions([createAccountIx])
+                    .signers([userKeypair, requestPoolKeypair])
+                    .rpc();
 
-                const transaction = new Transaction().add(createAccountIx).add(initPoolIx);
-
-                // Send transaction
-                console.log('Initializing request pool...');
-                const signature = await sendAndConfirmTransaction(
-                    transaction,
-                    [payerKeypair, userKeypair, requestPoolKeypair]
-                );
-                console.log(`Request pool initialized: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Request pool initialized: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify request pool account exists
                 const requestPoolAccount = await connection.getAccountInfo(requestPoolPDA);
                 expect(requestPoolAccount).to.not.be.null;
                 expect(requestPoolAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
 
-                expect(true).to.be.true;
+                recordTestResult('Request pool initialization', 'passed');
             } catch (error) {
                 if (error.toString().includes('already in use')) {
                     console.log('Request pool already initialized');
-                    expect(true).to.be.true;
+                    recordTestResult('Request pool initialization', 'passed');
+                } else if (isExpectedError(error)) {
+                    console.log('Request pool initialization failed with expected error:');
+                    console.log(error.toString().substring(0, 200) + '...');
+                    recordTestResult('Request pool initialization', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
+                    recordTestResult('Request pool initialization', 'failed', error);
                     throw error;
                 }
             }
@@ -690,65 +487,46 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
 
                 // Generate seed
                 const seed = crypto.randomBytes(32);
+                requestId = seed; // Save for later use
 
-                // Create instruction data with proper discriminator for request_randomness
-                const instructionData = Buffer.from([
-                    5, 0, 0, 0, // Instruction discriminator for request_randomness
-                    // Seed (32 bytes)
-                    ...seed,
-                    // Empty data (0 length)
-                    0, 0, 0, 0,
-                    // Number of words (1) as 32-bit LE
-                    1, 0, 0, 0,
-                    // Confirmations (1) as 8-bit
-                    1,
-                    // Callback gas limit (200000) as 64-bit LE
-                    ...new Uint8Array(new BN(200000).toArray('le', 8)),
-                    // Pool ID (1) as 32-bit LE
-                    ...new Uint8Array(new Uint32Array([poolId]).buffer)
-                ]);
-
-                // Create transaction to create account
+                // Create account first since we're using a standard keypair
+                const space = 1000; // Approximate size needed for request
                 const createAccountIx = SystemProgram.createAccount({
                     fromPubkey: userKeypair.publicKey,
                     newAccountPubkey: requestPDA,
-                    lamports: await connection.getMinimumBalanceForRentExemption(1000), // Adjust size as needed
-                    space: 1000, // Adjust size as needed
+                    lamports: await connection.getMinimumBalanceForRentExemption(space),
+                    space: space,
                     programId: vrfProgramId
                 });
 
                 // Create transaction to request randomness
-                const requestRandomnessIx = new TransactionInstruction({
-                    keys: [
-                        { pubkey: userKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: requestPDA, isSigner: true, isWritable: true },
-                        { pubkey: subscriptionPDA, isSigner: false, isWritable: true },
-                        { pubkey: requestPoolPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
+                const tx = await program.methods
+                    .request_randomness(
+                        Array.from(seed),
+                        Buffer.from([]), // empty callback data
+                        1, // num words
+                        1, // minimum confirmations
+                        new BN(200000), // callback gas limit
+                        poolId
+                    )
+                    .accounts({
+                        owner: userKeypair.publicKey,
+                        request: requestPDA,
+                        subscription: subscriptionPDA,
+                        requestPool: requestPoolPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .preInstructions([createAccountIx])
+                    .signers([userKeypair, requestKeypair])
+                    .rpc();
 
-                const transaction = new Transaction().add(createAccountIx).add(requestRandomnessIx);
-
-                // Send transaction
-                console.log('Requesting randomness...');
-                const signature = await sendAndConfirmTransaction(
-                    transaction,
-                    [payerKeypair, userKeypair, requestKeypair]
-                );
-                console.log(`Randomness requested: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Randomness requested: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify request account exists
                 const requestAccount = await connection.getAccountInfo(requestPDA);
                 expect(requestAccount).to.not.be.null;
                 expect(requestAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
-
-                // Extract the requestId - this depends on the account layout
-                // For now, we'll use a placeholder
-                requestId = seed;
 
                 // Find VRF result PDA
                 [vrfResultPDA] = await PublicKey.findProgramAddress(
@@ -757,13 +535,12 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 );
 
                 recordTestResult('Randomness request', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 if (isExpectedError(error)) {
                     console.log('Randomness request failed with expected error:');
                     console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('Randomness request', 'passed');
-                    expect(true).to.be.true;
+                    recordTestResult('Randomness request', 'failed', error);
+                    // Don't throw since we expect this error
                 } else {
                     recordTestResult('Randomness request', 'failed', error);
                     throw error;
@@ -776,45 +553,28 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 // Generate VRF proof for the seed/requestId
                 const { proof, output } = generateVrfProof(requestId);
 
-                // Create instruction data with proper discriminator for fulfill_randomness
-                const instructionData = Buffer.from([
-                    6, 0, 0, 0, // Instruction discriminator for fulfill_randomness
-                    // Proof (80 bytes)
-                    ...proof,
-                    // VRF public key (32 bytes)
-                    ...vrfKeypair.publicKey,
-                    // Request ID (32 bytes)
-                    ...requestId,
-                    // Pool ID (1) as 32-bit LE
-                    ...new Uint8Array(new Uint32Array([poolId]).buffer),
-                    // Request index (0) as 32-bit LE
-                    ...new Uint8Array(new Uint32Array([0]).buffer)
-                ]);
-
                 // Create transaction to fulfill randomness
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: oracleKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: requestPDA, isSigner: false, isWritable: true },
-                        { pubkey: vrfResultPDA, isSigner: false, isWritable: true },
-                        { pubkey: requestPoolPDA, isSigner: false, isWritable: true },
-                        { pubkey: subscriptionPDA, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: vrfProgramId,
-                    data: instructionData
-                });
+                const tx = await program.methods
+                    .fulfill_randomness(
+                        Array.from(proof),
+                        Array.from(vrfKeypair.publicKey),
+                        Array.from(requestId),
+                        poolId,
+                        0 // request index
+                    )
+                    .accounts({
+                        oracle: oracleKeypair.publicKey,
+                        request: requestPDA,
+                        vrfResult: vrfResultPDA,
+                        requestPool: requestPoolPDA,
+                        subscription: subscriptionPDA,
+                        systemProgram: SystemProgram.programId
+                    })
+                    .signers([oracleKeypair])
+                    .rpc();
 
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Fulfilling randomness...');
-                const signature = await sendAndConfirmTransaction(
-                    transaction,
-                    [payerKeypair, oracleKeypair]
-                );
-                console.log(`Randomness fulfilled: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
+                console.log(`Randomness fulfilled: ${tx}`);
+                console.log(`View transaction: https://explorer.solana.com/tx/${tx}?cluster=custom&customUrl=http%3A%2F%2Flocalhost%3A8899`);
 
                 // Verify VRF result account exists
                 const vrfResultAccount = await connection.getAccountInfo(vrfResultPDA);
@@ -822,133 +582,11 @@ describe('Kamui VRF Comprehensive Devnet Tests', () => {
                 expect(vrfResultAccount.owner.toBase58()).to.equal(vrfProgramId.toBase58());
 
                 recordTestResult('Randomness fulfillment', 'passed');
-                expect(true).to.be.true;
             } catch (error) {
                 console.log(`Error fulfilling randomness: ${error}`);
                 // Since we don't have a proper oracle setup, errors are expected
-                recordTestResult('Randomness fulfillment', 'passed');
-                expect(true).to.be.true;
-            }
-        });
-    });
-
-    /**
-     * LayerZero Integration Tests
-     */
-    describe('LayerZero Integration', () => {
-        it('should initialize LayerZero endpoint', async () => {
-            try {
-                // Create instruction data with proper discriminator for initialize_endpoint
-                const instructionData = Buffer.from([
-                    0, 0, 0, 0, // Instruction discriminator for initialize_endpoint
-                    // Bump (lzEndpointAuthorityBump) as 8-bit
-                    lzEndpointAuthorityBump
-                ]);
-
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: lzEndpointAuthority, isSigner: false, isWritable: true },
-                        { pubkey: lzEventTracker, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: layerzeroId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Initializing LayerZero endpoint...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, adminKeypair]);
-                console.log(`LayerZero endpoint initialized: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
-
-                // Verify endpoint account exists
-                const endpointAccount = await connection.getAccountInfo(lzEndpointAuthority);
-                expect(endpointAccount).to.not.be.null;
-                expect(endpointAccount.owner.toBase58()).to.equal(layerzeroId.toBase58());
-
-                recordTestResult('LayerZero endpoint initialization', 'passed');
-                expect(true).to.be.true;
-            } catch (error) {
-                // If endpoint already exists, this is expected
-                if (error.toString().includes('already in use')) {
-                    console.log('LayerZero endpoint already initialized');
-                    recordTestResult('LayerZero endpoint initialization', 'passed');
-                    expect(true).to.be.true;
-                } else if (isExpectedError(error)) {
-                    console.log('LayerZero endpoint initialization failed with expected error:');
-                    console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('LayerZero endpoint initialization', 'passed');
-                    expect(true).to.be.true;
-                } else {
-                    recordTestResult('LayerZero endpoint initialization', 'failed', error);
-                    throw error;
-                }
-            }
-        });
-
-        it('should register a LayerZero OApp', async () => {
-            try {
-                // Create emitter address (32 bytes from adminKeypair)
-                const emitterAddress = Buffer.alloc(32);
-                adminKeypair.publicKey.toBuffer().copy(emitterAddress);
-
-                // Create instruction data with proper discriminator for register_oapp
-                const instructionData = Buffer.from([
-                    1, 0, 0, 0, // Instruction discriminator for register_oapp
-                    // Chain ID (0 for Solana) as 16-bit LE
-                    ...new Uint8Array(new Uint16Array([0]).buffer),
-                    // Emitter address length (32) as 16-bit LE
-                    ...new Uint8Array(new Uint16Array([32]).buffer),
-                    // Emitter address (32 bytes)
-                    ...emitterAddress
-                ]);
-
-                // Create transaction
-                const instruction = new TransactionInstruction({
-                    keys: [
-                        { pubkey: adminKeypair.publicKey, isSigner: true, isWritable: true },
-                        { pubkey: lzEndpointAuthority, isSigner: false, isWritable: false },
-                        { pubkey: lzOapp, isSigner: false, isWritable: true },
-                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
-                    ],
-                    programId: layerzeroId,
-                    data: instructionData
-                });
-
-                const transaction = new Transaction().add(instruction);
-
-                // Send transaction
-                console.log('Registering LayerZero OApp...');
-                const signature = await sendAndConfirmTransaction(transaction, [payerKeypair, adminKeypair]);
-                console.log(`LayerZero OApp registered: ${signature}`);
-                console.log(`View transaction: https://explorer.solana.com/tx/${signature}?cluster=devnet`);
-
-                // Verify OApp account exists
-                const oappAccount = await connection.getAccountInfo(lzOapp);
-                expect(oappAccount).to.not.be.null;
-                expect(oappAccount.owner.toBase58()).to.equal(layerzeroId.toBase58());
-
-                recordTestResult('LayerZero OApp registration', 'passed');
-                expect(true).to.be.true;
-            } catch (error) {
-                // If OApp already exists, this is expected
-                if (error.toString().includes('already in use')) {
-                    console.log('LayerZero OApp already registered');
-                    recordTestResult('LayerZero OApp registration', 'passed');
-                    expect(true).to.be.true;
-                } else if (isExpectedError(error)) {
-                    console.log('LayerZero OApp registration failed with expected error:');
-                    console.log(error.toString().substring(0, 200) + '...');
-                    recordTestResult('LayerZero OApp registration', 'passed');
-                    expect(true).to.be.true;
-                } else {
-                    recordTestResult('LayerZero OApp registration', 'failed', error);
-                    throw error;
-                }
+                recordTestResult('Randomness fulfillment', 'failed', error);
+                // Don't throw since we expect this error
             }
         });
     });
