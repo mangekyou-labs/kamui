@@ -4,7 +4,7 @@ skip-lint = false
 
 [toolchain]
 anchor_version = "0.31.1"
-solana_version = "2.1.21"
+solana_version = "1.18.22"
 
 [programs.localnet]
 kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"

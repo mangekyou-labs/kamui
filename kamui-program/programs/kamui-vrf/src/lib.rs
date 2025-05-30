@@ -14,12 +14,6 @@ pub mod utils;
 #[cfg(feature = "light-compression")]
 pub mod light_compressed_vrf;
 
-// Optional compressed account modules (legacy)
-#[cfg(feature = "compressed-accounts")]
-pub mod compressed;
-#[cfg(feature = "compressed-accounts")]
-pub mod compressed_vrf;
-
 use state::*;
 use errors::*;
 
@@ -27,50 +21,9 @@ use errors::*;
 #[cfg(feature = "light-compression")]
 use light_compressed_vrf::{CreateCompressedVrfRequest, FulfillCompressedVrfRequest};
 
-// Only import compressed modules if the feature is enabled
-#[cfg(feature = "compressed-accounts")]
-use compressed::*;
-#[cfg(feature = "compressed-accounts")]
-use compressed_vrf::*;
-
 #[program]
 pub mod kamui_vrf {
     use super::*;
-
-    // Light Protocol compressed VRF functions
-    #[cfg(feature = "light-compression")]
-    pub fn create_compressed_vrf_request(
-        ctx: Context<CreateCompressedVrfRequest>,
-        seed: [u8; 32],
-        callback_data: Vec<u8>,
-        num_words: u32,
-        minimum_confirmations: u8,
-        callback_gas_limit: u64,
-        pool_id: u8,
-    ) -> Result<()> {
-        light_compressed_vrf::instructions::create_compressed_vrf_request(
-            ctx,
-            seed,
-            callback_data,
-            num_words,
-            minimum_confirmations,
-            callback_gas_limit,
-            pool_id,
-        )
-    }
-
-    #[cfg(feature = "light-compression")]
-    pub fn fulfill_compressed_vrf_request(
-        ctx: Context<FulfillCompressedVrfRequest>,
-        random_value: [u8; 32],
-        proof: Vec<u8>,
-    ) -> Result<()> {
-        light_compressed_vrf::instructions::fulfill_compressed_vrf_request(
-            ctx,
-            random_value,
-            proof,
-        )
-    }
 
     // Enhanced Subscription Management
     pub fn create_enhanced_subscription(
@@ -104,70 +57,6 @@ pub mod kamui_vrf {
         subscription.pool_ids = Vec::new();
         
         Ok(())
-    }
-
-    // Conditional compilation for compressed VRF features (legacy)
-    #[cfg(feature = "compressed-accounts")]
-    pub fn create_compressed_vrf_accounts(
-        ctx: Context<InitializeCompressedVrfAccount>,
-        max_depth: u32,
-        max_buffer_size: u32,
-    ) -> Result<()> {
-        // Default parameters if not specified
-        let max_depth = if max_depth == 0 { 20 } else { max_depth };
-        let max_buffer_size = if max_buffer_size == 0 { 8 } else { max_buffer_size };
-        
-        // Initialize a compressed account for VRF data
-        compressed::instructions::initialize_compressed_vrf_account(
-            ctx,
-            max_depth,
-            max_buffer_size,
-        )?;
-        
-        msg!("Compressed VRF account created successfully");
-        Ok(())
-    }
-    
-    // Conditional compilation for compressed VRF features (legacy)
-    #[cfg(feature = "compressed-accounts")]
-    pub fn request_compressed_randomness(
-        ctx: Context<RequestCompressedRandomness>,
-        seed: [u8; 32],
-        callback_data: Vec<u8>,
-        num_words: u32,
-        minimum_confirmations: u8,
-        callback_gas_limit: u64,
-        pool_id: u8,
-    ) -> Result<()> {
-        compressed_vrf::instructions::request_compressed_randomness(
-            ctx,
-            seed,
-            callback_data,
-            num_words,
-            minimum_confirmations,
-            callback_gas_limit,
-            pool_id,
-        )
-    }
-    
-    // Conditional compilation for compressed VRF features (legacy)
-    #[cfg(feature = "compressed-accounts")]
-    pub fn fulfill_compressed_randomness(
-        ctx: Context<FulfillCompressedRandomness>,
-        proof: Vec<u8>,
-        public_key: Vec<u8>,
-        request_id: [u8; 32],
-        pool_id: u8,
-        request_index: u32,
-    ) -> Result<()> {
-        compressed_vrf::instructions::fulfill_compressed_randomness(
-            ctx,
-            proof,
-            public_key,
-            request_id,
-            pool_id,
-            request_index,
-        )
     }
 
     pub fn fund_subscription(
@@ -300,7 +189,7 @@ pub mod kamui_vrf {
     ) -> Result<()> {
         let request = &mut ctx.accounts.request;
         let vrf_result = &mut ctx.accounts.vrf_result;
-        let pool = &ctx.accounts.request_pool;
+        let _pool = &ctx.accounts.request_pool;
         
         // Verify request is pending
         require!(
@@ -393,6 +282,43 @@ pub mod kamui_vrf {
         
         Ok(())
     }
+}
+
+// Light Protocol compressed VRF functions - defined outside #[program] to avoid macro issues
+#[cfg(feature = "light-compression")]
+pub fn create_compressed_vrf_request(
+    ctx: Context<CreateCompressedVrfRequest>,
+    seed: [u8; 32],
+    callback_data: Vec<u8>,
+    num_words: u32,
+    minimum_confirmations: u8,
+    callback_gas_limit: u64,
+    pool_id: u8,
+) -> Result<()> {
+    light_compressed_vrf::instructions::create_compressed_vrf_request(
+        ctx,
+        seed,
+        callback_data,
+        num_words,
+        minimum_confirmations,
+        callback_gas_limit,
+        pool_id,
+    )
+}
+
+#[cfg(feature = "light-compression")]
+pub fn fulfill_compressed_vrf_request(
+    ctx: Context<FulfillCompressedVrfRequest>,
+    merkle_tree_index: u64,
+    random_value: [u8; 32],
+    proof: Vec<u8>,
+) -> Result<()> {
+    light_compressed_vrf::instructions::fulfill_compressed_vrf_request(
+        ctx,
+        merkle_tree_index,
+        random_value,
+        proof,
+    )
 }
 
 pub const MINIMUM_REQUEST_CONFIRMATIONS: u8 = 1;
