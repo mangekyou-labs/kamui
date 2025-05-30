@@ -99,9 +99,12 @@ pub enum KamuiVrfError {
     #[msg("Compression initialization failed")]
     CompressionInitFailed,
     
-    #[msg("Compression operation failed")]
-    CompressionError,
+    #[msg("Too many active requests")]
+    TooManyActiveRequests,
     
-    #[msg("Data serialization failed")]
-    SerializationError,
+    #[msg("Request pool is full")]
+    PoolFull,
+    
+    #[msg("Invalid proof length")]
+    InvalidProofLength,
 } 
