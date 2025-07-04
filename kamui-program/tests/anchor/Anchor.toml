@@ -8,6 +8,7 @@ skip-lint = false
 [programs.localnet]
 kamui_vrf_consumer = "5gSZAw9aDQYGJABr6guQqPRFzyX656BSoiEdhHaUzyh6"
 kamui_program = "BfwfooykCSdb1vgu6FcP75ncUgdcdt4ciUaeaSLzxM4D"
+kamui_layerzero = "E8ka62cKB63dqbC3CLNReWXRVF4rHJy3qvaXcBimJQSU"
 
 [registry]
 url = "https://api.apr.dev"
@@ -27,6 +28,11 @@ upgradeable = false
 [[test.genesis]]
 address = "5gSZAw9aDQYGJABr6guQqPRFzyX656BSoiEdhHaUzyh6"
 program = "fixtures/vrf_consumer.so"
+upgradeable = false
+
+[[test.genesis]]
+address = "E8ka62cKB63dqbC3CLNReWXRVF4rHJy3qvaXcBimJQSU"
+program = "../../target/deploy/kamui_layerzero.so"
 upgradeable = false
 
 [[test.validator.account]]

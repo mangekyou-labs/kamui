@@ -1,108 +1,189 @@
 use anchor_lang::prelude::*;
 
+/// The main OApp Store PDA that acts as the OApp address
 #[account]
-#[derive(Default)]
-pub struct Endpoint {
-    /// The admin of the endpoint
-    pub authority: Pubkey,
-    /// The bump seed for the endpoint PDA
-    pub authority_bump: u8,
-    /// The number of messages sent so far
-    pub outbound_nonce: u64,
-    /// Funds collected from users for message fees
-    pub collected_fees: u64,
+pub struct Store {
+    pub admin: Pubkey, // This is required and should be consistent.
+    pub bump: u8, // This is required and should be consistent.
+    pub endpoint_program: Pubkey, // This is required and should be consistent.
+    pub string: String, // This is specific to this string-passing example.
+    pub vrf_data: VrfData, // VRF-specific data for the OApp
+    // You can add more fields as needed for your OApp implementation.
 }
+
+impl Store {
+    pub const MAX_STRING_LENGTH: usize = 256;
+    pub const SIZE: usize = 8 + std::mem::size_of::<Self>() + Self::MAX_STRING_LENGTH;
+}
+
+// The LzReceiveTypesAccounts PDA is used by the Executor as a prerequisite to calling `lz_receive`.
+#[account]
+pub struct LzReceiveTypesAccounts {
+    pub store: Pubkey, // This is required and should be consistent.
+}
+
+impl LzReceiveTypesAccounts {
+    pub const SIZE: usize = 8 + std::mem::size_of::<Self>();
+}
+
+pub const ENFORCED_OPTIONS_SEND_MAX_LEN: usize = 512;
+pub const ENFORCED_OPTIONS_SEND_AND_CALL_MAX_LEN: usize = 1024;
 
 #[account]
-pub struct OApp {
-    /// The owner of the OApp
-    pub owner: Pubkey,
-    /// The OApp identifier
-    pub app_id: Pubkey,
-    /// The app config for message sending
-    pub config: AppConfig,
-    /// The next nonce to use for outgoing messages
-    pub outbound_nonce: u64,
-    /// Trusted remote applications, keyed by chain ID
-    pub trusted_remotes: Vec<TrustedRemote>,
-    /// List of pending VRF requests keyed by request ID
-    pub pending_requests: Vec<PendingVrfRequest>,
+pub struct PeerConfig {
+    pub peer_address: [u8; 32],
+    pub enforced_options: EnforcedOptions,
+    pub bump: u8,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
-pub struct AppConfig {
-    /// Default gas to use on destination chain
-    pub default_gas_limit: u64,
-    /// Default fees to collect for messages
-    pub default_fee: u64,
+impl PeerConfig {
+    pub const SIZE: usize = 8 + std::mem::size_of::<Self>();
 }
 
+#[derive(Clone, Default, AnchorSerialize, AnchorDeserialize, InitSpace)]
+pub struct EnforcedOptions {
+    #[max_len(ENFORCED_OPTIONS_SEND_MAX_LEN)]
+    pub send: Vec<u8>,
+    #[max_len(ENFORCED_OPTIONS_SEND_AND_CALL_MAX_LEN)]
+    pub send_and_call: Vec<u8>,
+}
+
+impl EnforcedOptions {
+    pub fn get_enforced_options(&self, composed_msg: &Option<Vec<u8>>) -> Vec<u8> {
+        if composed_msg.is_none() {
+            self.send.clone()
+        } else {
+            self.send_and_call.clone()
+        }
+    }
+
+    pub fn combine_options(
+        &self,
+        compose_msg: &Option<Vec<u8>>,
+        extra_options: &Vec<u8>,
+    ) -> Result<Vec<u8>> {
+        let enforced_options = self.get_enforced_options(compose_msg);
+        oapp::options::combine_options(enforced_options, extra_options)
+    }
+}
+
+/// Parameters for initializing the Store
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct TrustedRemote {
-    /// Remote chain ID
-    pub chain_id: u16,
-    /// Remote contract address (32 bytes to support both EVM and non-EVM chains)
-    pub address: [u8; 32],
+pub struct InitStoreParams {
+    /// The admin/owner of the OApp
+    pub admin: Pubkey,
+    /// The LayerZero endpoint program ID
+    pub endpoint: Pubkey,
 }
 
+/// Parameters for setting a peer
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
-pub struct PendingVrfRequest {
-    /// Request ID
-    pub request_id: [u8; 32],
-    /// Source chain that requested the VRF
-    pub src_chain_id: u16,
-    /// Source contract that requested the VRF
-    pub src_address: [u8; 32],
-    /// Timestamp when the request was made
-    pub timestamp: i64,
-    /// The VRF seed used for the request
-    pub seed: [u8; 32],
-    /// Whether the request has been fulfilled
-    pub fulfilled: bool,
+pub struct SetPeerConfigParams {
+    pub remote_eid: u32,
+    pub config: PeerConfigParam,
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy)]
+/// Configuration parameter for a peer
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub enum PeerConfigParam {
+    PeerAddress([u8; 32]),
+    /// Optionally enforce specific send options for this peer
+    EnforcedOptions { send: Vec<u8>, send_and_call: Vec<u8> },
+}
+
+/// Parameters for sending a message
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct SendMessageParams {
+    pub dst_eid: u32,
+    pub message: String,
+    pub options: Vec<u8>,
+    pub native_fee: u64,
+    pub lz_token_fee: u64,
+}
+
+/// Parameters for quoting send fee
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct QuoteSendParams {
+    pub dst_eid: u32,
+    pub receiver: [u8; 32],
+    pub message: String,
+    pub options: Vec<u8>,
+    pub pay_in_lz_token: bool,
+}
+
+// MessagingFee is now imported from oapp::endpoint::MessagingFee
+
+/// Message types for LayerZero messages
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, PartialEq)]
 pub enum MessageType {
     VrfRequest,
     VrfFulfillment,
+    Generic,
 }
 
+/// Parameters for VRF requests
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct RequestVrfParams {
+    pub dst_eid: u32,
+    pub seed: [u8; 32],
+    pub num_words: u8,
+    pub callback_data: Vec<u8>,
+    pub fee: u64,
+}
+
+/// VRF request payload structure
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct VrfRequestPayload {
-    /// Requesting contract identifier
+    pub msg_type: MessageType,
     pub requester: [u8; 32],
-    /// Seed for VRF
     pub seed: [u8; 32],
-    /// Any additional data provided by the requester
+    pub num_words: u8,
     pub callback_data: Vec<u8>,
-    /// Number of random words requested
-    pub num_words: u32,
-    /// Pool ID for the VRF request
-    pub pool_id: u8,
 }
 
+/// VRF fulfillment parameters
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct FulfillVrfParams {
+    pub dst_eid: u32,
+    pub request_id: [u8; 32],
+    pub randomness: Vec<u64>,
+    pub proof: Vec<u8>,
+    pub fee: u64,
+}
+
+/// VRF fulfillment payload structure
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct VrfFulfillmentPayload {
-    /// Original request ID
+    pub msg_type: MessageType,
     pub request_id: [u8; 32],
-    /// Random bytes generated
-    pub randomness: [u8; 64],
+    pub randomness: Vec<u64>,
+    pub proof: Vec<u8>,
 }
 
-/// LayerZero inbound message hash to avoid replay attacks
-#[account]
-pub struct NonceAccount {
-    /// The chain ID of the source chain
-    pub src_chain_id: u16,
-    /// The address of the source contract
-    pub src_address: [u8; 32],
-    /// The current inbound nonce
-    pub inbound_nonce: u64,
+/// Parameters for lz_send instruction
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct LzSendParams {
+    pub dst_eid: u32,
+    pub message: Vec<u8>,
+    pub options: Vec<u8>,
+    pub fee: u64,
 }
 
-/// LayerZero event emitter to keep track of outbound messages
-#[account]
-pub struct EventTracker {
-    /// The next event to emit
-    pub next_event_id: u64,
+/// VRF-specific data for the OApp
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Default)]
+pub struct VrfData {
+    pub oracle_pubkey: Option<Pubkey>,
+    pub pending_requests: Vec<VrfRequest>,
+}
+
+/// VRF request structure
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct VrfRequest {
+    pub request_id: [u8; 32],
+    pub requester: Pubkey,
+    pub seed: [u8; 32],
+    pub num_words: u8,
+    pub callback_data: Vec<u8>,
+    pub timestamp: i64,
+    pub fulfilled: bool,
 } 

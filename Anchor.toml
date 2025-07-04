@@ -1,0 +1,31 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+
+[programs.devnet]
+kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+
+[programs.mainnet]
+kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "find . -name '*.ts' ! -path './node_modules/*' -exec npx ts-node {} \\;"
+
+[test]
+startup_wait = 5000
+
+[[test.genesis]]
+address = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+program = "target/deploy/kamui_layerzero.so" 

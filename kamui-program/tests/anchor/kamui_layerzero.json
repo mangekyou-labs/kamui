@@ -1,0 +1,1449 @@
+{
+  "address": "E8ka62cKB63dqbC3CLNReWXRVF4rHJy3qvaXcBimJQSU",
+  "metadata": {
+    "name": "kamui_layerzero",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "LayerZero integration for Kamui VRF"
+  },
+  "instructions": [
+    {
+      "name": "fulfill_vrf",
+      "docs": [
+        "Fulfill VRF request"
+      ],
+      "discriminator": [
+        2,
+        152,
+        127,
+        138,
+        81,
+        199,
+        73,
+        21
+      ],
+      "accounts": [
+        {
+          "name": "oracle",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "FulfillVrfParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "init_store",
+      "docs": [
+        "Initialize the OApp Store PDA"
+      ],
+      "discriminator": [
+        250,
+        74,
+        6,
+        95,
+        163,
+        188,
+        19,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "lz_receive_types_accounts",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  76,
+                  122,
+                  82,
+                  101,
+                  99,
+                  101,
+                  105,
+                  118,
+                  101,
+                  84,
+                  121,
+                  112,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "InitStoreParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "lz_receive",
+      "docs": [
+        "Process an incoming LayerZero message"
+      ],
+      "discriminator": [
+        8,
+        179,
+        120,
+        109,
+        33,
+        118,
+        189,
+        80
+      ],
+      "accounts": [
+        {
+          "name": "store",
+          "docs": [
+            "OApp Store PDA.  This account represents the \"address\" of your OApp on",
+            "Solana and can contain any state relevant to your application.",
+            "Customize the fields in `Store` as needed."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "docs": [
+            "Peer config PDA for the sending chain. Ensures `params.sender` can only be the allowed peer from that remote chain."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.src_eid"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "LzReceiveParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "lz_receive_types",
+      "docs": [
+        "Returns the accounts required for lz_receive"
+      ],
+      "discriminator": [
+        221,
+        17,
+        246,
+        159,
+        248,
+        128,
+        31,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "store",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "LzReceiveParams"
+            }
+          }
+        }
+      ],
+      "returns": {
+        "vec": {
+          "defined": {
+            "name": "LzAccount"
+          }
+        }
+      }
+    },
+    {
+      "name": "lz_send",
+      "docs": [
+        "Send a LayerZero message with raw bytes"
+      ],
+      "discriminator": [
+        179,
+        223,
+        67,
+        35,
+        38,
+        172,
+        5,
+        52
+      ],
+      "accounts": [
+        {
+          "name": "sender",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "LzSendParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "quote_send",
+      "docs": [
+        "Quote the fee for sending a message"
+      ],
+      "discriminator": [
+        207,
+        0,
+        49,
+        214,
+        160,
+        211,
+        76,
+        211
+      ],
+      "accounts": [
+        {
+          "name": "peer",
+          "docs": [
+            "Configuration for the destination chain. Holds the peer address and any",
+            "enforced messaging options."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "store",
+          "docs": [
+            "OApp Store PDA"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "QuoteSendParams"
+            }
+          }
+        }
+      ],
+      "returns": {
+        "defined": {
+          "name": "MessagingFee"
+        }
+      }
+    },
+    {
+      "name": "request_vrf",
+      "docs": [
+        "Request VRF from another chain"
+      ],
+      "discriminator": [
+        5,
+        87,
+        79,
+        152,
+        164,
+        176,
+        190,
+        226
+      ],
+      "accounts": [
+        {
+          "name": "requester",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "RequestVrfParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "send",
+      "docs": [
+        "Send a message to another chain"
+      ],
+      "discriminator": [
+        102,
+        251,
+        20,
+        187,
+        65,
+        75,
+        12,
+        69
+      ],
+      "accounts": [
+        {
+          "name": "sender",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "SendMessageParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "set_delegate",
+      "docs": [
+        "Set delegate for LayerZero operations"
+      ],
+      "discriminator": [
+        242,
+        30,
+        46,
+        76,
+        108,
+        235,
+        128,
+        181
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "store"
+          ]
+        },
+        {
+          "name": "store",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "delegate",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_peer_config",
+      "docs": [
+        "Set peer configuration for a remote chain"
+      ],
+      "discriminator": [
+        79,
+        187,
+        168,
+        57,
+        139,
+        140,
+        93,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "The admin/owner of the OApp"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "store",
+          "docs": [
+            "The OApp Store PDA"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  116,
+                  111,
+                  114,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "peer",
+          "docs": [
+            "The peer config PDA for the destination chain"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  101,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "store"
+              },
+              {
+                "kind": "arg",
+                "path": "params.dst_eid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "SetPeerConfigParams"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LzReceiveTypesAccounts",
+      "discriminator": [
+        248,
+        87,
+        167,
+        117,
+        5,
+        251,
+        21,
+        126
+      ]
+    },
+    {
+      "name": "PeerConfig",
+      "discriminator": [
+        181,
+        157,
+        86,
+        198,
+        33,
+        193,
+        94,
+        203
+      ]
+    },
+    {
+      "name": "Store",
+      "discriminator": [
+        130,
+        48,
+        247,
+        244,
+        182,
+        191,
+        30,
+        26
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access - only admin can perform this action"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidEndpointId",
+      "msg": "Invalid endpoint ID"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidPeerAddress",
+      "msg": "Invalid peer address"
+    },
+    {
+      "code": 6003,
+      "name": "PeerNotFound",
+      "msg": "Peer not found for the given endpoint ID"
+    },
+    {
+      "code": 6004,
+      "name": "MessageTooLarge",
+      "msg": "Message payload too large"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidMessageFormat",
+      "msg": "Invalid message format"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidVrfParams",
+      "msg": "Invalid VRF parameters"
+    },
+    {
+      "code": 6007,
+      "name": "VrfRequestNotFound",
+      "msg": "VRF request not found"
+    },
+    {
+      "code": 6008,
+      "name": "VrfRequestAlreadyFulfilled",
+      "msg": "VRF request already fulfilled"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidCallbackDataSize",
+      "msg": "Invalid callback data size"
+    },
+    {
+      "code": 6010,
+      "name": "MaxVrfRequestsExceeded",
+      "msg": "Maximum number of VRF requests exceeded"
+    },
+    {
+      "code": 6011,
+      "name": "ArithmeticOverflow",
+      "msg": "Arithmetic overflow occurred"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidSender",
+      "msg": "Invalid sender - not from trusted peer"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidNonce",
+      "msg": "Invalid nonce - message ordering issue"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidGuid",
+      "msg": "Invalid GUID - message identifier issue"
+    },
+    {
+      "code": 6015,
+      "name": "MessageDecodingFailed",
+      "msg": "Failed to decode message payload"
+    },
+    {
+      "code": 6016,
+      "name": "EndpointCpiFailed",
+      "msg": "LayerZero endpoint CPI failed"
+    },
+    {
+      "code": 6017,
+      "name": "InsufficientFee",
+      "msg": "Insufficient fee for LayerZero message"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidMessageType",
+      "msg": "Invalid message type"
+    },
+    {
+      "code": 6019,
+      "name": "AccountConstraintViolation",
+      "msg": "Account constraint violation"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidAccountSize",
+      "msg": "Invalid account size"
+    },
+    {
+      "code": 6021,
+      "name": "StoreNotInitialized",
+      "msg": "Store not initialized"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidComposeMessage",
+      "msg": "Invalid compose message"
+    },
+    {
+      "code": 6023,
+      "name": "MessageEncodingError",
+      "msg": "Failed to encode message"
+    },
+    {
+      "code": 6024,
+      "name": "MessageDecodingError",
+      "msg": "Failed to decode message"
+    },
+    {
+      "code": 6025,
+      "name": "RequestNotFound",
+      "msg": "Request not found"
+    },
+    {
+      "code": 6026,
+      "name": "UnauthorizedOracle",
+      "msg": "Unauthorized oracle"
+    },
+    {
+      "code": 6027,
+      "name": "UnauthorizedAccess",
+      "msg": "Unauthorized access"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidRemoteAddress",
+      "msg": "Invalid remote address"
+    },
+    {
+      "code": 6029,
+      "name": "InvalidDestinationChain",
+      "msg": "Invalid destination chain"
+    },
+    {
+      "code": 6030,
+      "name": "RemoteNotTrusted",
+      "msg": "Remote not trusted"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidAdapterParams",
+      "msg": "Invalid adapter parameters"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidSourceChain",
+      "msg": "Invalid source chain"
+    },
+    {
+      "code": 6033,
+      "name": "RequestAlreadyFulfilled",
+      "msg": "Request already fulfilled"
+    }
+  ],
+  "types": [
+    {
+      "name": "EnforcedOptions",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "send",
+            "type": "bytes"
+          },
+          {
+            "name": "send_and_call",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FulfillVrfParams",
+      "docs": [
+        "VRF fulfillment parameters"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "type": "u32"
+          },
+          {
+            "name": "request_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "randomness",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "proof",
+            "type": "bytes"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitStoreParams",
+      "docs": [
+        "Parameters for initializing the Store"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "The admin/owner of the OApp"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "endpoint",
+            "docs": [
+              "The LayerZero endpoint program ID"
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LzAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_signer",
+            "type": "bool"
+          },
+          {
+            "name": "is_writable",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LzReceiveParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "src_eid",
+            "type": "u32"
+          },
+          {
+            "name": "sender",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "guid",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "message",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LzReceiveTypesAccounts",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "store",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LzSendParams",
+      "docs": [
+        "Parameters for lz_send instruction"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "type": "u32"
+          },
+          {
+            "name": "message",
+            "type": "bytes"
+          },
+          {
+            "name": "options",
+            "type": "bytes"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MessagingFee",
+      "docs": [
+        "Fee structure for LayerZero messaging"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "native_fee",
+            "type": "u64"
+          },
+          {
+            "name": "lz_token_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PeerConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "peer_address",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "enforced_options",
+            "type": {
+              "defined": {
+                "name": "EnforcedOptions"
+              }
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "QuoteSendParams",
+      "docs": [
+        "Parameters for quoting send fee"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "type": "u32"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          },
+          {
+            "name": "options",
+            "type": "bytes"
+          },
+          {
+            "name": "pay_in_lz_token",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestVrfParams",
+      "docs": [
+        "Parameters for VRF requests"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "type": "u32"
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "num_words",
+            "type": "u8"
+          },
+          {
+            "name": "callback_data",
+            "type": "bytes"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SendMessageParams",
+      "docs": [
+        "Parameters for sending a message"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "type": "u32"
+          },
+          {
+            "name": "message",
+            "type": "string"
+          },
+          {
+            "name": "options",
+            "type": "bytes"
+          },
+          {
+            "name": "native_fee",
+            "type": "u64"
+          },
+          {
+            "name": "lz_token_fee",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SetPeerConfigParams",
+      "docs": [
+        "Parameters for setting a peer"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dst_eid",
+            "docs": [
+              "The destination endpoint ID"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "peer_address",
+            "docs": [
+              "The peer address on the destination chain"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "enforced_options",
+            "docs": [
+              "Optional enforced options for the peer"
+            ],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "EnforcedOptions"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Store",
+      "docs": [
+        "The main OApp Store PDA that acts as the OApp address"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "endpoint_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "string",
+            "type": "string"
+          },
+          {
+            "name": "vrf_data",
+            "type": {
+              "defined": {
+                "name": "VrfData"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VrfData",
+      "docs": [
+        "VRF-specific data for the OApp"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oracle_pubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "pending_requests",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "VrfRequest"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "VrfRequest",
+      "docs": [
+        "VRF request structure"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "request_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "requester",
+            "type": "pubkey"
+          },
+          {
+            "name": "seed",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "num_words",
+            "type": "u8"
+          },
+          {
+            "name": "callback_data",
+            "type": "bytes"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "fulfilled",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}

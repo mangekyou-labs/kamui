@@ -1,14 +1,73 @@
 # Kamui Enhanced VRF System
 
-This directory contains the implementation of Kamui's enhanced Verifiable Random Function (VRF) system for Solana blockchain applications. The system provides secure, verifiable randomness for on-chain applications with robustness, scalability, and performance improvements.
+## LayerZero Kamui Integration (Solana OApp)
 
-## Key Features
+The Kamui LayerZero program provides **cross-chain VRF** for EVM ↔ Solana using the LayerZero omnichain protocol.
 
-- **Enhanced Subscriptions**: Subscriptions track balance, confirmations, and request limits
-- **Secure ID Generation**: Request IDs generated using cryptographic entropy
-- **Real ECVRF Integration**: Uses elliptic curve VRF for cryptographically secure randomness
-- **Flexible Configuration**: Configurable confirmation levels, gas limits, and request parameters
-- **Consumer Program Integration**: Sample game implementation showing randomness consumption
+👉 **Heads-up:** Due to a `zeroize` dependency conflict when building inside this monorepo, the full LayerZero OApp has been **vendored from a standalone workspace** (see `/tmp/kamui-layerzero-standalone-evm-test`).  That code has now been copied verbatim into `programs/kamui-layerzero/`.  If you hit `zeroize` linker errors again, simply move `programs/kamui-layerzero` to its own repository, build there with Anchor/Solana and then deploy; the on-chain behavior is unaffected.
+
+### Real Unit-Test Results (codec only)
+
+```bash
+=== LayerZero VRF Message Processing Tests ===
+
+  VRF Message Processing Test
+
+=== Testing VRF Request Message Processing ===
+VRF Request Payload created (EVM compatible):
+- Message Type: VrfRequest (0)
+- Requester: [01, 01, 01, ...] (32 bytes)
+- Seed: [42, 42, 42, ...] (32 bytes)
+- Callback Data: [11, 11, 11, ...] (32 bytes)
+- Num Words: 3 (uint32)
+- Pool ID: 1
+✅ VRF Request Message Type Validation: PASSED
+✅ VRF Request Payload Size Validation: PASSED
+✅ VRF Request Payload Structure: PASSED
+    ✔ should process VRF request message correctly
+
+=== Testing VRF Fulfillment Message Processing ===
+VRF Fulfillment Payload created (EVM compatible):
+- Message Type: VrfFulfillment (1)
+- Request ID: [11, 11, 11, ...] (32 bytes)
+- Randomness: [99, 99, 99, ...] (64 bytes)
+✅ VRF Fulfillment Message Type Validation: PASSED
+✅ VRF Fulfillment Payload Size Validation: PASSED
+✅ VRF Fulfillment Payload Structure: PASSED
+    ✔ should process VRF fulfillment message correctly
+
+=== Testing Generic String Message Processing ===
+Generic String Message created:
+- Message: Hello LayerZero!
+- Payload Size: 48 bytes
+✅ Generic String Message Validation: PASSED
+✅ Generic String Message Header: PASSED
+    ✔ should handle generic string message correctly
+
+=== Testing Message Processing Workflow ===
+✅ Message Type Detection: PASSED
+✅ Message Processing Workflow: COMPLETE
+    ✔ should validate message processing workflow
+
+=== Testing Codec Roundtrip Validation ===
+✅ VRF Request Roundtrip: PASSED
+✅ VRF Fulfillment Roundtrip: PASSED
+✅ Codec Roundtrip Validation: COMPLETE
+    ✔ should validate codec roundtrip
+
+  5 passing (2ms)
+```
+
+These five assertions confirm that the **EVM-compatible VRF message codec** (request & fulfillment) behaves exactly as expected.
+
+### Quick Start
+
+```bash
+yarn install   # or npm install
+node --experimental-vm-modules node_modules/mocha/bin/mocha.js \
+  programs/kamui-layerzero/tests/vrf_message_processing_test.js
+```
+
 
 ## Architecture
 
@@ -28,6 +87,30 @@ The VRF system has been deployed to Solana devnet with the following program IDs
 - **Verification Program**: `4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y`
 
 You can verify these deployments on [Solana Explorer](https://explorer.solana.com/address/6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a?cluster=devnet).
+
+## 📊 Devnet Test Results
+
+### Core VRF Features 
+- ✅ Enhanced VRF subscription creation
+- ✅ Subscription funding mechanism
+- ✅ Request pool initialization
+- ✅ Randomness request generation
+- ✅ Real ECVRF proof generation
+- ✅ Consumer program integration
+
+### Security & Validation 
+- ✅ Balance constraint validation
+- ✅ Request pooling and limits
+- ✅ Account ownership verification
+- ✅ Arithmetic overflow protection
+- ✅ Input validation and sanitization
+
+### Performance Optimizations
+- Fixed-size arrays instead of Vec<u8> for large data
+- Stack-based operations avoiding heap allocation
+- Zero-copy deserialization for large accounts
+- Streaming verification for oversized proofs
+- Compressed account storage option available
 
 ## Usage
 
@@ -169,4 +252,40 @@ The enhanced VRF system provides:
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0. See the LICENSE file for details. 
+This project is licensed under the Apache License, Version 2.0. See the LICENSE file for details.
+
+## Overview: LayerZero Kamui Cross-Chain VRF Flow
+
+The Kamui LayerZero program enables cross-chain VRF (Verifiable Random Function) requests and fulfillments between Solana and EVM chains using LayerZero's omnichain protocol. This allows EVM contracts to request randomness from Solana and receive verifiable results.
+
+### High-Level Flow
+1. **EVM contract** calls `requestRandomness()` on its LayerZero VRF consumer contract.
+2. **LayerZero** relays the request to Solana, where the `kamui-layerzero` program receives it.
+3. **kamui-layerzero** processes the message, validates the sender, and routes the request to the Kamui VRF program.
+4. **Kamui VRF** generates randomness and returns the result to `kamui-layerzero`.
+5. **kamui-layerzero** sends the VRF fulfillment back to the EVM chain via LayerZero.
+6. **EVM contract** receives the randomness and executes its callback logic.
+
+### Key Components
+- **kamui-layerzero**: Solana program implementing LayerZero OApp interface, message routing, and VRF request/fulfillment logic.
+- **kamui-vrf**: Solana program generating cryptographically secure randomness.
+- **VRFConsumerLZ.sol**: EVM contract for requesting and receiving randomness via LayerZero.
+
+For a detailed architecture diagram and message type breakdown, see `docs/README-LayerZero-VRF.md` and `LAYERZERO_DEVNET_SETUP.md`.
+
+---
+
+
+
+
+---
+
+## Additional Resources
+- [LayerZero Solana OApp Overview](https://docs.layerzero.network/v2/developers/solana/oapp/overview)
+- [Kamui VRF Documentation](../README.md)
+- [LAYERZERO_DEVNET_SETUP.md](./LAYERZERO_DEVNET_SETUP.md)
+- [docs/README-LayerZero-VRF.md](./docs/README-LayerZero-VRF.md)
+- [`programs/kamui-layerzero/tests/vrf_message_processing_test.js`](./programs/kamui-layerzero/tests/vrf_message_processing_test.js) — unit test validating the VRF message codec (run with `node --experimental-vm-modules node_modules/mocha/bin/mocha.js programs/kamui-layerzero/tests/vrf_message_processing_test.js`). 
+
+
+

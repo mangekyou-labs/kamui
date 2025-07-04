@@ -20,8 +20,8 @@ mock = ["mangekyou", "rand", "solana-sdk", "solana-client", "solana-program-test
 solana-program = { workspace = true }
 borsh = "0.10"
 thiserror = "1.0"
-spl-token = { version = "4.0", features = ["no-entrypoint"] }
-spl-associated-token-account = { version = "2.0.0", features = ["no-entrypoint"] }
+spl-token = { version = "^6.0", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "^4.0", features = ["no-entrypoint"] }
 sha2 = "0.10"
 base64 = "0.21"
 mangekyou = { path = "../mangekyou", optional = true }
@@ -78,18 +78,19 @@ path = "tests/generate_real_vrf_proof.rs"
 required-features = ["mock"]
 
 [workspace]
+resolver = "2"
 members = [
     "programs/kamui-vrf",
     "programs/kamui-vrf-consumer",
+    "programs/kamui-layerzero",
 ]
-resolver = "2"
 
 [workspace.dependencies]
-solana-program = "=1.17.2"
-solana-zk-token-sdk = "=1.17.2"
-solana-sdk = "=1.17.2"
-solana-program-test = "=1.17.2"
-solana-client = "=1.17.2"
+solana-program = "^2.1.0"
+solana-zk-token-sdk = "^2.1.0"
+solana-sdk = "^2.1.0"
+solana-program-test = "^2.1.0"
+solana-client = "^2.1.0"
 anchor-lang = "=0.31.1"
 anchor-spl = "=0.31.1"
 
@@ -104,3 +105,13 @@ overflow-checks = true
 
 [profile.test]
 overflow-checks = true
+
+[patch.crates-io]
+# Use compatible curve25519-dalek version
+curve25519-dalek = { git = "https://github.com/dalek-cryptography/curve25519-dalek", rev = "127c9e9", version = "=4.0.0-pre.0" }
+# Fix subtle version conflicts
+subtle = { git = "https://github.com/dalek-cryptography/subtle", rev = "b4b070c", version = "=2.4.1" }
+# Fix DER issues
+der = { git = "https://github.com/RustCrypto/formats", package = "der", version = "^0.7.0", rev = "510b74a" }
+# Fix zeroize version conflicts
+zeroize = { git = "https://github.com/iqlusioninc/crates", package = "zeroize", rev = "zeroize/v1.0.0" }
