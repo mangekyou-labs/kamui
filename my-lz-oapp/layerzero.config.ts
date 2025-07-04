@@ -5,14 +5,15 @@ import { OAppEnforcedOption, OmniPointHardhat } from '@layerzerolabs/toolbox-har
 
 import { getSolanaOAppAddress } from './tasks/solana'
 
-const optimismContract: OmniPointHardhat = {
-    eid: EndpointId.OPTSEP_V2_TESTNET,
+const sepoliaContract: OmniPointHardhat = {
+    eid: EndpointId.SEPOLIA_V2_TESTNET,
+    address: '0x824af7339b4fFC04D0FD867953eCbfCc75dEAf18',
     contractName: 'MyOApp',
 }
 
 const solanaContract: OmniPointHardhat = {
     eid: EndpointId.SOLANA_V2_TESTNET,
-    address: getSolanaOAppAddress(EndpointId.SOLANA_V2_TESTNET), // NOTE: replace with the oapp account address
+    address: 'F22ggNghzGGVzwoWqQau72RLPk8WChjWtMp6mwBGgfBd', // Our deployed program ID
 }
 
 // For this example's simplicity, we will use the same enforced options values for sending to all chains
@@ -34,18 +35,14 @@ const SOLANA_ENFORCED_OPTIONS: OAppEnforcedOption[] = [
     },
 ]
 
-// To connect all the above chains to each other, we need the following pathways:
-// Optimism <-> Solana
-
-// With the config generator, pathways declared are automatically bidirectional
-// i.e. if you declare A,B there's no need to declare B,A
+// To connect Ethereum Sepolia and Solana Devnet
 const pathways: TwoWayConfig[] = [
     [
-        optimismContract, // Chain A contract
-        solanaContract, // Chain C contract
+        sepoliaContract, // Chain A contract
+        solanaContract, // Chain B contract
         [['LayerZero Labs'], []], // [ requiredDVN[], [ optionalDVN[], threshold ] ]
         [1, 32], // [A to B confirmations, B to A confirmations]
-        [SOLANA_ENFORCED_OPTIONS, EVM_ENFORCED_OPTIONS], // Chain C enforcedOptions, Chain A enforcedOptions
+        [SOLANA_ENFORCED_OPTIONS, EVM_ENFORCED_OPTIONS], // Chain B enforcedOptions, Chain A enforcedOptions
     ],
 ]
 
@@ -53,7 +50,7 @@ export default async function () {
     // Generate the connections config based on the pathways
     const connections = await generateConnectionsConfig(pathways)
     return {
-        contracts: [{ contract: optimismContract }, { contract: solanaContract }],
+        contracts: [{ contract: sepoliaContract }, { contract: solanaContract }],
         connections,
     }
 }

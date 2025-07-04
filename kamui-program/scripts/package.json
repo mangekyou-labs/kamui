@@ -1,0 +1,8 @@
+{
+  "name": "sol-recovery-script",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@solana/web3.js": "^1.87.6"
+  }
+} 
