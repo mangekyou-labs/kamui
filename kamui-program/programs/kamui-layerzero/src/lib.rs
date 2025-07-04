@@ -8,7 +8,7 @@ use solana_helper::program_id_from_env;
 // KAMUI_LAYERZERO_ID=$PROGRAM_ID anchor build 
 declare_id!(anchor_lang::solana_program::pubkey::Pubkey::new_from_array(program_id_from_env!(
     "KAMUI_LAYERZERO_ID",
-    "E8ka62cKB63dqbC3CLNReWXRVF4rHJy3qvaXcBimJQSU" // Default ID if environment variable not set
+    "4ZKyWQwMr25cuNb2BR8zmWwTttN8ADbKVJr3HNi2RpVH" // Default ID if environment variable not set
 )));
 
 // LayerZero OApp standard seeds - required for LayerZero compatibility

@@ -56,6 +56,11 @@ const config: HardhatUserConfig = {
         ],
     },
     networks: {
+        'ethereum-sepolia': {
+            eid: EndpointId.SEPOLIA_V2_TESTNET,
+            url: process.env.RPC_URL_ETH_SEPOLIA || 'https://ethereum-sepolia.publicnode.com',
+            accounts,
+        },
         'optimism-testnet': {
             eid: EndpointId.OPTSEP_V2_TESTNET,
             url: process.env.RPC_URL_OP_SEPOLIA || 'https://optimism-sepolia.gateway.tenderly.co',

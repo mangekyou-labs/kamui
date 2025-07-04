@@ -85,8 +85,12 @@ The VRF system has been deployed to Solana devnet with the following program IDs
 - **Kamui VRF**: `6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a`
 - **VRF Consumer**: `2Pd6R21gGNJgrfxHQPegcXgwmSd5MY1uHBYrNAtYgPbE`
 - **Verification Program**: `4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y`
+- **LayerZero OApp**: `F22ggNghzGGVzwoWqQau72RLPk8WChjWtMp6mwBGgfBd`
+- **LayerZero EVM Contract** (Ethereum Sepolia): `0x824af7339b4fFC04D0FD867953eCbfCc75dEAf18`
 
-You can verify these deployments on [Solana Explorer](https://explorer.solana.com/address/6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a?cluster=devnet).
+You can verify these deployments on:
+- [Solana Explorer (Devnet)](https://explorer.solana.com/address/6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a?cluster=devnet)
+- [Ethereum Sepolia Explorer](https://sepolia.etherscan.io/address/0x824af7339b4fFC04D0FD867953eCbfCc75dEAf18)
 
 ## 📊 Devnet Test Results
 
