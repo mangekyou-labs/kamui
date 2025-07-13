@@ -289,7 +289,11 @@ The current `kamui-layerzero` program is fundamentally different from a real Lay
 
 ## Project Status Board
 
+<<<<<<< HEAD
 ### Current Phase: Phase 4 - Real LayerZero VRF Integration Implementation 🎯 **COMPLETED** ✅
+=======
+### Current Phase: Phase 4 - Real LayerZero VRF Integration Implementation 🎯
+>>>>>>> main
 
 **TASK 4.1 COMPLETED SUCCESSFULLY** ✅
 
