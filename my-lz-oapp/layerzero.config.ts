@@ -13,7 +13,7 @@ const sepoliaContract: OmniPointHardhat = {
 
 const solanaContract: OmniPointHardhat = {
     eid: EndpointId.SOLANA_V2_TESTNET,
-    address: 'F22ggNghzGGVzwoWqQau72RLPk8WChjWtMp6mwBGgfBd', // Our deployed program ID
+    address: 'Buef2wMdPvADYjVK4cPU6Hsp7EZTFqCRmVXMVuxbz8pU', // Our deployed OApp store account address
 }
 
 // For this example's simplicity, we will use the same enforced options values for sending to all chains
