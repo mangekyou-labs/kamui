@@ -20,6 +20,8 @@
 
 **PHASE 4 REALITY CHECK**: We need to implement REAL LayerZero VRF integration tests, not rely on mock tests that are designed to fail.
 
+**NEXT PHASE**: Real devnet test is required to validate the deployed program in a live LayerZero environment. This means not just deploying, but initializing the OApp store, running a real cross-chain message, and verifying end-to-end LayerZero integration. The reference implementation in `my-lz-oapp` provides scripts and patterns for this process.
+
 ## Key Challenges and Analysis
 
 ### 1. **Architecture Gap Analysis**
