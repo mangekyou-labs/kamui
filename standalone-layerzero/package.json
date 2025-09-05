@@ -1,9 +1,0 @@
-{
-  "scripts": {
-    "test": "node --experimental-vm-modules node_modules/mocha/bin/mocha.js tests/vrf_message_processing_test.js --reporter spec --timeout 10000"
-  },
-  "dependencies": {
-    "chai": "^5.2.0",
-    "mocha": "^11.7.1"
-  }
-}

@@ -105,7 +105,7 @@ echo "Installing dependencies..."
 npm install ws tweetnacl commander borsh bs58 solana-web3.js
 
 # Make the server script executable
-chmod +x vrf-server-simple-ws.js
+chmod +x vrf-server-websocket.js
 
 # Run the server
 echo "Starting VRF server..."
@@ -120,7 +120,7 @@ if [ -n "$REGISTRY_ID" ]; then
 fi
 
 # Stop any existing processes
-pkill -f "node vrf-server-simple-ws.js" || true
+pkill -f "node vrf-server-websocket.js" || true
 
 # Create log directory if it doesn't exist
 mkdir -p logs
@@ -130,22 +130,17 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOG_FILE="logs/vrf-server-${TIMESTAMP}.log"
 
 # Run with output to dedicated log file
-node vrf-server-simple-ws.js \
+node vrf-server-websocket.js \
   --program-id "$PROGRAM_ID" \
   --feepayer-keypair "$FEEPAYER_KEYPAIR_PATH" \
   --vrf-keypair "$VRF_KEYPAIR_PATH" \
-  --oracle-keypair "$ORACLE_KEYPAIR_PATH" \
   --rpc-url "$RPC_URL" \
-  --batch-size "$BATCH_SIZE" \
-  --log-level "$LOG_LEVEL" \
   $WS_OPTIONS \
-  $REGISTRY_OPTIONS \
-  --enhanced-mode true \
   --scan-interval "$SCAN_INTERVAL" > "$LOG_FILE" 2>&1 &
 
 # Save the PID
 SERVER_PID=$!
-echo $SERVER_PID > vrf-server-simple-ws.pid
+echo $SERVER_PID > vrf-server-websocket.pid
 echo "VRF WebSocket server started with PID $SERVER_PID"
 echo "Check $LOG_FILE for output"
 

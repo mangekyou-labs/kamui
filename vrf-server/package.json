@@ -6,9 +6,10 @@
     "bs58": "^5.0.0",
     "commander": "^13.1.0",
     "log4js": "^6.9.1",
+    "solana-web3.js": "^0.0.1-security",
     "tweetnacl": "^1.0.3",
     "winston": "^3.17.0",
-    "ws": "^8.18.2",
+    "ws": "^8.18.3",
     "yargs": "^17.7.2"
   }
 }

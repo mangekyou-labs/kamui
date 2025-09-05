@@ -1,0 +1,40 @@
+{
+  "name": "kamui-vrf-standalone-server",
+  "version": "1.0.0",
+  "description": "Standalone Kamui VRF Server with Mangekyou CLI Integration",
+  "main": "standalone-vrf-server.js",
+  "scripts": {
+    "start": "node standalone-vrf-server.js",
+    "test": "node standalone-vrf-server.js --test-cli",
+    "test-connection": "node standalone-vrf-server.js --test-connection",
+    "dev": "LOG_LEVEL=debug node standalone-vrf-server.js",
+    "install-deps": "npm install",
+    "setup": "npm run install-deps && npm run test && npm run test-connection"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "vrf",
+    "solana", 
+    "randomness",
+    "blockchain",
+    "cryptography"
+  ],
+  "author": "Mangekyou Labs",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mangekyou-labs/kamui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mangekyou-labs/kamui/issues"
+  },
+  "homepage": "https://github.com/mangekyou-labs/kamui#readme"
+}

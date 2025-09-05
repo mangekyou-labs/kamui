@@ -4,8 +4,9 @@ use crate::traits::AllowedRng;
 use solana_zk_token_sdk::curve25519::ristretto::PodRistrettoPoint;
 use solana_zk_token_sdk::curve25519::scalar::PodScalar;
 
-use curve25519_dalek::scalar::Scalar;
-use curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
+use solana_zk_token_sdk::curve25519_dalek::scalar::Scalar;
+use solana_zk_token_sdk::curve25519_dalek::constants::RISTRETTO_BASEPOINT_POINT;
+use solana_zk_token_sdk::curve25519_dalek::ristretto::RistrettoPoint;
 
 /// The Ristretto basepoint encoded as bytes
 pub const BASEPOINT_BYTES: [u8; 32] = [

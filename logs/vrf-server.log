@@ -1,0 +1,33 @@
+[2025-09-05T07:42:53.494Z] ℹ️  🚀 Initializing Standalone Kamui VRF Server
+[2025-09-05T07:42:53.500Z] ℹ️  ================================================================================
+[2025-09-05T07:42:53.500Z] ℹ️  Initializing Mangekyou CLI interface...
+[2025-09-05T07:42:53.500Z] ✅ CLI binary found in workspace target directory
+[2025-09-05T07:42:53.501Z] ℹ️  Loaded existing VRF keypair
+[2025-09-05T07:42:53.501Z] ℹ️  Testing CLI functionality...
+[2025-09-05T07:42:53.517Z] ✅ CLI functionality test passed
+[2025-09-05T07:42:53.517Z] ✅ Mangekyou CLI interface initialized successfully
+[2025-09-05T07:42:53.540Z] ℹ️  Oracle keypair loaded: 5uxFEa42Gvvv8FBA5xPwppdd6NYmoz3kLQzAJUKkR6VD
+[2025-09-05T07:42:54.088Z] ✅ Connected to Solana cluster
+[2025-09-05T07:42:54.088Z] ✅ VRF Server initialized successfully
+[2025-09-05T07:42:54.088Z] ℹ️  📊 Server Configuration:
+[2025-09-05T07:42:54.088Z] ℹ️     VRF Program ID: 6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a
+[2025-09-05T07:42:54.088Z] ℹ️     Consumer Program ID: 2Pd6R21gGNJgrfxHQPegcXgwmSd5MY1uHBYrNAtYgPbE
+[2025-09-05T07:42:54.088Z] ℹ️     Verifier Program ID: 4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y
+[2025-09-05T07:42:54.088Z] ℹ️     RPC URL: https://api.devnet.solana.com
+[2025-09-05T07:42:54.089Z] ℹ️     Oracle Pubkey: 5uxFEa42Gvvv8FBA5xPwppdd6NYmoz3kLQzAJUKkR6VD
+[2025-09-05T07:42:54.089Z] ℹ️     VRF Public Key: fc1a737d32b04017feb698701d04e99784b4116cd7e88fe2471b4926bcace54f
+[2025-09-05T07:42:54.089Z] ℹ️     Polling Interval: 5000ms
+[2025-09-05T07:42:54.089Z] ℹ️  🎯 Starting VRF request monitoring...
+[2025-09-05T07:42:54.089Z] ℹ️  🔍 Monitoring for pending VRF requests...
+[2025-09-05T07:42:54.089Z] ℹ️  📡 Ready to fulfill randomness requests!
+[2025-09-05T07:42:54.089Z] ℹ️  ⚠️  Press Ctrl+C to stop the server
+
+[2025-09-05T07:43:09.649Z] ℹ️  
+🛑 Received shutdown signal
+[2025-09-05T07:43:09.650Z] ℹ️  📊 Final Statistics:
+[2025-09-05T07:43:09.650Z] ℹ️     Uptime: 15s
+[2025-09-05T07:43:09.650Z] ℹ️     Requests processed: 0
+[2025-09-05T07:43:09.650Z] ℹ️     Requests fulfilled: 0
+[2025-09-05T07:43:09.650Z] ℹ️     Errors: 0
+[2025-09-05T07:43:09.650Z] ℹ️     Success rate: 0%
+[2025-09-05T07:43:09.650Z] ✅ VRF Server shutdown completed

@@ -1,0 +1,63 @@
+{
+  "name": "kamui-vrf-production",
+  "version": "1.0.0",
+  "description": "Production-ready Kamui VRF Server with real cryptographic proofs",
+  "main": "standalone-vrf-server.js",
+  "scripts": {
+    "start": "node standalone-vrf-server.js",
+    "start:production": "./launch-production-vrf-server.sh start",
+    "stop": "./launch-production-vrf-server.sh stop",
+    "restart": "./launch-production-vrf-server.sh restart",
+    "status": "./launch-production-vrf-server.sh status",
+    "logs": "./launch-production-vrf-server.sh logs",
+    "test": "./launch-production-vrf-server.sh test",
+    "test:cli": "node standalone-vrf-server.js --test-cli",
+    "test:connection": "node standalone-vrf-server.js --test-connection",
+    "dev": "LOG_LEVEL=debug node standalone-vrf-server.js",
+    "build": "cargo build --bin ecvrf-cli --release",
+    "setup": "./setup-standalone-vrf-server.sh"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mangekyou-labs/kamui.git"
+  },
+  "keywords": [
+    "vrf",
+    "randomness",
+    "blockchain",
+    "solana",
+    "cryptography",
+    "oracle",
+    "ecvrf"
+  ],
+  "author": "Mangekyou Labs",
+  "license": "MIT",
+  "dependencies": {
+    "@solana/web3.js": "^1.87.0"
+  },
+  "devDependencies": {},
+  "productionConfig": {
+    "defaultRpcUrl": "https://api.devnet.solana.com",
+    "defaultPollingInterval": 5000,
+    "defaultLogLevel": "info",
+    "maxRetries": 3,
+    "requestTimeout": 30000,
+    "fulfillmentGasLimit": 1000000
+  },
+  "deployment": {
+    "requirements": [
+      "Node.js >= 16.0.0",
+      "Rust toolchain for CLI compilation",
+      "Solana CLI (optional, for keyfile management)"
+    ],
+    "setup": [
+      "npm install",
+      "cargo build --bin ecvrf-cli --release",
+      "Generate oracle keypair: node -e \"const {Keypair} = require('@solana/web3.js'); const fs = require('fs'); const kp = Keypair.generate(); fs.writeFileSync('oracle-keypair.json', JSON.stringify(Array.from(kp.secretKey))); console.log('Oracle pubkey:', kp.publicKey.toString());\""
+    ],
+    "start": "./launch-production-vrf-server.sh start"
+  }
+}
