@@ -5,7 +5,6 @@
 /kamui-example-program/target
 mangekyou/Cargo.lock
 mangekyou-derive/Cargo.lock
-/evm-vrf
 /vrf-server/node_modules
 /my-lz-oapp/target
 node_modules/
