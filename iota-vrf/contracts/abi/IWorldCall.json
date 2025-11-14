@@ -1,0 +1,31 @@
+[
+  {
+    "type": "function",
+    "name": "call",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "funcSelectorAndArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "payable"
+  }
+]

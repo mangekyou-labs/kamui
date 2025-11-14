@@ -1,0 +1,120 @@
+[
+  {
+    "type": "function",
+    "name": "getWorldAddress",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "requestRandomWords",
+    "inputs": [
+      {
+        "name": "_oracleId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_nbWords",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_requestConfirmations",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "_callbackGasLimit",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_callbackSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setCoordinator",
+    "inputs": [
+      {
+        "name": "_coordinator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "error",
+    "name": "Slice_OutOfBounds",
+    "inputs": [
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      },
+      {
+        "name": "start",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "end",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_InvalidDataLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_TableNotFound",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "tableIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  }
+]

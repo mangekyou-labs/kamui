@@ -1,0 +1,95 @@
+[
+  {
+    "type": "error",
+    "name": "AccessDenied",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FunctionSelectorExists",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FunctionSelectorNotFound",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidSelector",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ModuleAlreadyInstalled",
+    "inputs": [
+      {
+        "name": "module",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ResourceExists",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ResourceNotFound",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SystemExists",
+    "inputs": [
+      {
+        "name": "system",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  }
+]

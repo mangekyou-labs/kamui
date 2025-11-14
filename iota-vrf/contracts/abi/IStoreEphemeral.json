@@ -1,0 +1,50 @@
+[
+  {
+    "type": "function",
+    "name": "emitEphemeralRecord",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "StoreEphemeralRecord",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "indexed": false,
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  }
+]

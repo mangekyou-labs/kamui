@@ -1,0 +1,67 @@
+[
+  {
+    "type": "function",
+    "name": "mudvrf_VRFCoordinatorSy_getWorldAddress",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "mudvrf_VRFCoordinatorSy_requestRandomWords",
+    "inputs": [
+      {
+        "name": "_oracleId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_nbWords",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_requestConfirmations",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "_callbackGasLimit",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_callbackSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "mudvrf_VRFCoordinatorSy_setCoordinator",
+    "inputs": [
+      {
+        "name": "_coordinator",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

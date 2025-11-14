@@ -1,0 +1,336 @@
+[
+  {
+    "type": "function",
+    "name": "call",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "funcSelectorAndArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "stateMutability": "payable"
+  },
+  {
+    "type": "function",
+    "name": "deleteRecord",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "installRootModule",
+    "inputs": [
+      {
+        "name": "module",
+        "type": "address",
+        "internalType": "contract IModule"
+      },
+      {
+        "name": "args",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "popFromField",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "byteLengthToPop",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "pushToField",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "dataToPush",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setField",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setRecord",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "updateInField",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "startByteIndex",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "dataToSet",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "HelloWorld",
+    "inputs": [],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "AccessDenied",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FunctionSelectorExists",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "FunctionSelectorNotFound",
+    "inputs": [
+      {
+        "name": "functionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "InvalidSelector",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ModuleAlreadyInstalled",
+    "inputs": [
+      {
+        "name": "module",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ResourceExists",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ResourceNotFound",
+    "inputs": [
+      {
+        "name": "resource",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "SystemExists",
+    "inputs": [
+      {
+        "name": "system",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  }
+]

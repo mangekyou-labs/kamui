@@ -1,0 +1,407 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_blockHashStore",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "MAXIMUM_CALLBACK_GAS_LIMIT",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MAXIMUM_NB_WORDS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "MINIMUM_REQUEST_CONFIRMATIONS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint16",
+        "internalType": "uint16"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ORACLE_ADDRESS",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "ORACLE_ID",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "blockHashStore",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract BlockHashStore"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "fulfillRandomWords",
+    "inputs": [
+      {
+        "name": "_proof",
+        "type": "tuple",
+        "internalType": "struct VRF.Proof",
+        "components": [
+          {
+            "name": "pk",
+            "type": "uint256[2]",
+            "internalType": "uint256[2]"
+          },
+          {
+            "name": "gamma",
+            "type": "uint256[2]",
+            "internalType": "uint256[2]"
+          },
+          {
+            "name": "c",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "s",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "seed",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "uWitness",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "cGammaWitness",
+            "type": "uint256[2]",
+            "internalType": "uint256[2]"
+          },
+          {
+            "name": "sHashWitness",
+            "type": "uint256[2]",
+            "internalType": "uint256[2]"
+          },
+          {
+            "name": "zInv",
+            "type": "uint256",
+            "internalType": "uint256"
+          }
+        ]
+      },
+      {
+        "name": "_request",
+        "type": "tuple",
+        "internalType": "struct VRF.Request",
+        "components": [
+          {
+            "name": "sender",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "nonce",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "oracleId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "nbWords",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "requestConfirmations",
+            "type": "uint16",
+            "internalType": "uint16"
+          },
+          {
+            "name": "callbackGasLimit",
+            "type": "uint32",
+            "internalType": "uint32"
+          },
+          {
+            "name": "callbackAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          {
+            "name": "callbackSelector",
+            "type": "bytes4",
+            "internalType": "bytes4"
+          },
+          {
+            "name": "blockNumber",
+            "type": "uint64",
+            "internalType": "uint64"
+          }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "nonce",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "oracles",
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "requestRandomWords",
+    "inputs": [
+      {
+        "name": "_oracleId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "_nbWords",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_requestConfirmations",
+        "type": "uint16",
+        "internalType": "uint16"
+      },
+      {
+        "name": "_callbackGasLimit",
+        "type": "uint32",
+        "internalType": "uint32"
+      },
+      {
+        "name": "_callbackAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "_callbackSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "requests",
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "event",
+    "name": "FulfillRandomWords",
+    "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RequestRandomWords",
+    "inputs": [
+      {
+        "name": "requestId",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "sender",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "nonce",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "oracleId",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "nbWords",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "requestConfirmations",
+        "type": "uint16",
+        "indexed": false,
+        "internalType": "uint16"
+      },
+      {
+        "name": "callbackGasLimit",
+        "type": "uint32",
+        "indexed": false,
+        "internalType": "uint32"
+      },
+      {
+        "name": "callbackAddress",
+        "type": "address",
+        "indexed": false,
+        "internalType": "address"
+      },
+      {
+        "name": "callbackSelector",
+        "type": "bytes4",
+        "indexed": false,
+        "internalType": "bytes4"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "error",
+    "name": "FailedToFulfillRandomness",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCallbackGasLimit",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidCommitment",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidNumberOfWords",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidOracleId",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidRequestConfirmations",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidRequestParameters",
+    "inputs": []
+  }
+]

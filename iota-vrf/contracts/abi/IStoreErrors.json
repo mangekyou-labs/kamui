@@ -1,0 +1,92 @@
+[
+  {
+    "type": "error",
+    "name": "StoreCore_DataIndexOverflow",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_InvalidDataLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_InvalidFieldNamesLength",
+    "inputs": [
+      {
+        "name": "expected",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "received",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_NotDynamicField",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_NotImplemented",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_TableAlreadyExists",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "tableIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StoreCore_TableNotFound",
+    "inputs": [
+      {
+        "name": "tableId",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "tableIdString",
+        "type": "string",
+        "internalType": "string"
+      }
+    ]
+  }
+]

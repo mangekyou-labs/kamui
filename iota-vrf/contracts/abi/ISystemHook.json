@@ -1,0 +1,48 @@
+[
+  {
+    "type": "function",
+    "name": "onAfterCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "funcSelectorAndArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onBeforeCallSystem",
+    "inputs": [
+      {
+        "name": "msgSender",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "systemAddress",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "funcSelectorAndArgs",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

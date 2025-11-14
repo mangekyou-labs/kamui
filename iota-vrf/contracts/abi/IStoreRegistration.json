@@ -1,0 +1,66 @@
+[
+  {
+    "type": "function",
+    "name": "registerSchema",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "schema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      },
+      {
+        "name": "keySchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerStoreHook",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "hook",
+        "type": "address",
+        "internalType": "contract IStoreHook"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setMetadata",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "tableName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "fieldNames",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

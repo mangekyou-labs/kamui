@@ -1,0 +1,30 @@
+[
+  {
+    "type": "function",
+    "name": "emitEphemeralRecord",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

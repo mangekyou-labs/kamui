@@ -1,0 +1,99 @@
+[
+  {
+    "type": "function",
+    "name": "onAfterSetField",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onBeforeSetField",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "schemaIndex",
+        "type": "uint8",
+        "internalType": "uint8"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onDeleteRecord",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "onSetRecord",
+    "inputs": [
+      {
+        "name": "table",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "key",
+        "type": "bytes32[]",
+        "internalType": "bytes32[]"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]

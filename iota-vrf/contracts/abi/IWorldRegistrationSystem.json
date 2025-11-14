@@ -1,0 +1,248 @@
+[
+  {
+    "type": "function",
+    "name": "registerFunctionSelector",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "systemFunctionName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "systemFunctionArguments",
+        "type": "string",
+        "internalType": "string"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "worldFunctionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerHook",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "hook",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerNamespace",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerRootFunctionSelector",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "worldFunctionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      },
+      {
+        "name": "systemFunctionSelector",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes4",
+        "internalType": "bytes4"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSystem",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "system",
+        "type": "address",
+        "internalType": "contract System"
+      },
+      {
+        "name": "publicAccess",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "resourceSelector",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerSystemHook",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "hook",
+        "type": "address",
+        "internalType": "contract ISystemHook"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerTable",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "valueSchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      },
+      {
+        "name": "keySchema",
+        "type": "bytes32",
+        "internalType": "Schema"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "resourceSelector",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "registerTableHook",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "hook",
+        "type": "address",
+        "internalType": "contract IStoreHook"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setMetadata",
+    "inputs": [
+      {
+        "name": "namespace",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "name",
+        "type": "bytes16",
+        "internalType": "bytes16"
+      },
+      {
+        "name": "tableName",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "fieldNames",
+        "type": "string[]",
+        "internalType": "string[]"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  }
+]
