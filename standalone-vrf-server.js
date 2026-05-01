@@ -35,7 +35,7 @@ const CONFIG = {
     
     // CLI configuration
     CLI_PATH: process.env.MANGEKYOU_CLI_PATH || "../mangekyou-cli",
-    CLI_BINARY: "target/debug/ecvrf-cli",
+    CLI_BINARY: "./ecvrf-cli",
     
     // Server configuration
     POLLING_INTERVAL: parseInt(process.env.POLLING_INTERVAL) || 3000,
@@ -83,7 +83,7 @@ class MangekyouCLIInterface {
     async ensureCLIBuilt() {
         try {
             // Check if CLI binary exists in the workspace target directory
-            const workspaceCliPath = path.join(process.cwd(), 'target/debug/ecvrf-cli');
+            const workspaceCliPath = path.join(process.cwd(), './ecvrf-cli');
             await fs.access(workspaceCliPath);
             Logger.success("CLI binary found in workspace target directory");
             // Update CLI path to use the workspace binary

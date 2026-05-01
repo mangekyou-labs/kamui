@@ -1,0 +1,21 @@
+services:
+  kamui-iota-vrf-node:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    image: kamui/iota-vrf-node:local
+    restart: unless-stopped
+    environment:
+      FASTCRYPTO_CLI_PATH: /usr/local/bin/ecvrf-cli
+      OPS_HOST: ${OPS_HOST:-127.0.0.1}
+      OPS_PORT: ${OPS_PORT:-9464}
+      STATE_DIR: /var/lib/kamui-iota-vrf/state
+    volumes:
+      - ../node/.env:/app/node/.env:ro
+      - ../node/state:/var/lib/kamui-iota-vrf/state
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://127.0.0.1:${OPS_PORT:-9464}/readyz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

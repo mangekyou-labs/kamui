@@ -33,9 +33,9 @@ pub mod encoding;
 pub mod error;
 pub mod groups;
 pub mod hash;
+pub mod kamui_vrf;
 pub mod serde_helpers;
 pub mod utils;
-pub mod kamui_vrf;
 
 /// This module contains unsecure cryptographic primitives. The purpose of this library is to allow seamless
 /// benchmarking of systems without taking into account the cost of cryptographic primitives - and hence

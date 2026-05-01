@@ -1,4 +1,8 @@
 use {
+    hex,
+    kamui_program::instruction::VerifyVrfInput,
+    mangekyou::kamui_vrf::{ecvrf::ECVRFKeyPair, VRFKeyPair, VRFProof},
+    rand::thread_rng,
     solana_client::rpc_client::RpcClient,
     solana_program::{
         instruction::{AccountMeta, Instruction},
@@ -10,23 +14,13 @@ use {
         signature::{Keypair, Signer},
         transaction::Transaction,
     },
-    std::{str::FromStr, fs::File, io::Read},
-    mangekyou::{
-        kamui_vrf::{
-            ecvrf::ECVRFKeyPair,
-            VRFKeyPair,
-            VRFProof,
-        },
-    },
-    kamui_program::instruction::VerifyVrfInput,
-    rand::thread_rng,
-    hex,
+    std::{fs::File, io::Read, str::FromStr},
 };
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
 async fn test_simple_vrf_verification_devnet() {
     println!("🚀 Starting Simple VRF Verification Test on Devnet");
-    
+
     // Connect to devnet
     let rpc_url = "https://api.devnet.solana.com".to_string();
     let rpc_client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
@@ -37,14 +31,19 @@ async fn test_simple_vrf_verification_devnet() {
     // Load keypair from file
     let mut keypair_file = File::open("keypair.json").expect("Failed to open keypair.json");
     let mut keypair_data = String::new();
-    keypair_file.read_to_string(&mut keypair_data).expect("Failed to read keypair.json");
-    let keypair_bytes: Vec<u8> = serde_json::from_str(&keypair_data).expect("Failed to parse keypair JSON");
+    keypair_file
+        .read_to_string(&mut keypair_data)
+        .expect("Failed to read keypair.json");
+    let keypair_bytes: Vec<u8> =
+        serde_json::from_str(&keypair_data).expect("Failed to parse keypair JSON");
     let payer = Keypair::from_bytes(&keypair_bytes).expect("Failed to create keypair from bytes");
-    
+
     println!("Using keypair with pubkey: {}", payer.pubkey());
-    
+
     // Verify the balance
-    let balance = rpc_client.get_balance(&payer.pubkey()).expect("Failed to get balance");
+    let balance = rpc_client
+        .get_balance(&payer.pubkey())
+        .expect("Failed to get balance");
     println!("Current balance: {} SOL", balance as f64 / 1_000_000_000.0);
 
     if balance == 0 {
@@ -54,14 +53,14 @@ async fn test_simple_vrf_verification_devnet() {
     // Generate a new VRF keypair
     let vrf_keypair = ECVRFKeyPair::generate(&mut thread_rng());
     let alpha_string = b"Hello, VRF world!";
-    
+
     // Generate VRF proof and output
     let (output, proof) = vrf_keypair.output(alpha_string);
     println!("Generated VRF output: {:?}", hex::encode(&output));
-    
+
     // Get public key bytes
     let public_key_bytes = vrf_keypair.pk.as_ref().to_vec();
-    
+
     // Get proof bytes
     let proof_bytes = proof.to_bytes();
 
@@ -91,28 +90,28 @@ async fn test_simple_vrf_verification_devnet() {
         .expect("Failed to get recent blockhash");
 
     // Create and sign transaction
-    let message = Message::new_with_blockhash(
-        &[instruction],
-        Some(&payer.pubkey()),
-        &recent_blockhash,
-    );
+    let message =
+        Message::new_with_blockhash(&[instruction], Some(&payer.pubkey()), &recent_blockhash);
     let mut transaction = Transaction::new_unsigned(message);
     transaction.sign(&[&payer], recent_blockhash);
 
     println!("📤 Sending transaction to verify VRF proof...");
-    
+
     // Send and confirm transaction
     match rpc_client.send_and_confirm_transaction_with_spinner(&transaction) {
         Ok(signature) => {
             println!("✅ Transaction successful!");
             println!("📋 Signature: {}", signature);
-            println!("🔗 View transaction: https://explorer.solana.com/tx/{}?cluster=devnet", signature);
+            println!(
+                "🔗 View transaction: https://explorer.solana.com/tx/{}?cluster=devnet",
+                signature
+            );
             println!("🎉 VRF verification on devnet PASSED!");
         }
         Err(error) => {
             println!("❌ Transaction failed: {}", error);
             println!("📝 Error details: {:?}", error);
-            
+
             // Analyze the error
             if error.to_string().contains("memory allocation failed") {
                 println!("🔍 Root Cause: Memory allocation failure in VRF verification");
@@ -133,11 +132,11 @@ async fn test_simple_vrf_verification_devnet() {
             } else {
                 println!("🔍 Root Cause: Unknown error - needs investigation");
             }
-            
+
             // Don't panic - this is expected to fail due to memory limitations
             println!("⚠️ This failure is EXPECTED due to known Solana memory limitations");
         }
     }
-    
+
     println!("🏁 Simple VRF verification test completed");
-} 
+}

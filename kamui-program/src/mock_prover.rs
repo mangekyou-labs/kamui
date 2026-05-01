@@ -1,15 +1,11 @@
 #[cfg(feature = "mock")]
 use {
-    crate::{
-        instruction::VrfCoordinatorInstruction,
-        event::VrfEvent,
-        state::{RandomnessRequest},
-    },
-    borsh::{BorshDeserialize},
+    crate::{event::VrfEvent, instruction::VrfCoordinatorInstruction, state::RandomnessRequest},
+    base64::Engine,
+    borsh::BorshDeserialize,
     mangekyou::kamui_vrf::{
         ecvrf::{ECVRFKeyPair, ECVRFProof},
-        VRFProof,
-        VRFKeyPair,
+        VRFKeyPair, VRFProof,
     },
     solana_program::{
         instruction::{AccountMeta, Instruction},
@@ -18,13 +14,7 @@ use {
     },
     solana_program_test::BanksClient,
     solana_program_test::ProgramTest,
-    solana_sdk::{
-        signature::Keypair,
-        signer::Signer,
-        transaction::Transaction,
-        hash::Hash,
-    },
-    base64::Engine,
+    solana_sdk::{hash::Hash, signature::Keypair, signer::Signer, transaction::Transaction},
 };
 
 #[cfg(feature = "mock")]
@@ -41,11 +31,7 @@ pub struct MockProver {
 impl MockProver {
     pub async fn new() -> Self {
         let program_id = Pubkey::new_unique();
-        let program_test = ProgramTest::new(
-            "kamui_program",
-            program_id,
-            None,
-        );
+        let program_test = ProgramTest::new("kamui_program", program_id, None);
 
         let (banks_client, payer, recent_blockhash) = program_test.start().await;
         let keypair = ECVRFKeyPair::from_bytes(&[0u8; 32]).unwrap();
@@ -66,7 +52,9 @@ impl MockProver {
         }
 
         let base64_data = log_msg.trim_start_matches("VRF_EVENT:").trim();
-        let event_data = base64::engine::general_purpose::STANDARD.decode(base64_data).ok()?;
+        let event_data = base64::engine::general_purpose::STANDARD
+            .decode(base64_data)
+            .ok()?;
         VrfEvent::try_from_slice(&event_data).ok()
     }
 
@@ -107,10 +95,8 @@ impl MockProver {
         };
 
         // Send transaction
-        let mut transaction = Transaction::new_with_payer(
-            &[fulfill_ix],
-            Some(&self.payer.pubkey()),
-        );
+        let mut transaction =
+            Transaction::new_with_payer(&[fulfill_ix], Some(&self.payer.pubkey()));
         transaction.sign(&[&self.payer, &vrf_result], self.recent_blockhash);
         self.banks_client.process_transaction(transaction).await?;
 
@@ -118,6 +104,7 @@ impl MockProver {
     }
 
     pub fn get_vrf_result_account(&self) -> Pubkey {
-        self.vrf_result.expect("No VRF result account available - call process_randomness_request first")
+        self.vrf_result
+            .expect("No VRF result account available - call process_randomness_request first")
     }
-} 
+}

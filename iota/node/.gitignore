@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+!.env.mainnet.example
+state/
+vrf-keypair.json
+operator-keypair.json

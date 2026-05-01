@@ -4,7 +4,6 @@
 //! Implementations of the [ristretto255 group](https://www.ietf.org/archive/id/draft-irtf-cfrg-ristretto255-decaf448-03.html) which is a group of
 //! prime order 2^{252} + 27742317777372353535851937790883648493 built over Curve25519.
 
-
 use crate::error::MangekyouResult;
 use crate::groups::{
     Doubling, FiatShamirChallenge, GroupElement, HashToGroupElement, MultiScalarMul, Scalar,
@@ -220,9 +219,7 @@ impl FiatShamirChallenge for RistrettoScalar {
 }
 
 impl ToFromByteArray<RISTRETTO_SCALAR_BYTE_LENGTH> for RistrettoScalar {
-    fn from_byte_array(
-        bytes: &[u8; RISTRETTO_SCALAR_BYTE_LENGTH],
-    ) -> Result<Self, MangekyouError> {
+    fn from_byte_array(bytes: &[u8; RISTRETTO_SCALAR_BYTE_LENGTH]) -> Result<Self, MangekyouError> {
         Ok(RistrettoScalar(
             ExternalRistrettoScalar::from_canonical_bytes(*bytes)
                 .ok_or(MangekyouError::InvalidInput)?,

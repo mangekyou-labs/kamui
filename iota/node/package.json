@@ -1,0 +1,27 @@
+{
+  "name": "@kamui/iota-vrf-node",
+  "version": "0.1.0",
+  "description": "Off-chain VRF oracle node for IOTA mainnet",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "demo:setup": "ts-node src/demo/setup.ts",
+    "demo:request": "ts-node src/demo/request.ts",
+    "demo:consume": "ts-node src/demo/consume.ts",
+    "demo:view": "ts-node src/demo/view.ts",
+    "demo:measure": "ts-node src/demo/measure.ts",
+    "demo:kpi": "DEMO_MEASURE_ENFORCE=1 ts-node src/demo/measure.ts",
+    "test": "tsc --project tsconfig.json && node --test $(find dist -name '*.test.js' -print)"
+  },
+  "dependencies": {
+    "@iota/iota-sdk": "^1.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.0.0"
+  }
+}

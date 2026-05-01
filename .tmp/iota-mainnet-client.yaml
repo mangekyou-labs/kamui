@@ -1,0 +1,30 @@
+---
+keystore:
+  File: /Users/kyler/repos/kamui/.tmp/iota-mainnet.keystore
+envs:
+  - alias: mainnet
+    rpc: "https://api.mainnet.iota.cafe"
+    graphql: "https://graphql.mainnet.iota.cafe"
+    ws: ~
+    basic_auth: ~
+    faucet: ~
+  - alias: devnet
+    rpc: "https://api.devnet.iota.cafe"
+    graphql: "https://graphql.devnet.iota.cafe"
+    ws: ~
+    basic_auth: ~
+    faucet: "https://faucet.devnet.iota.cafe/v1/gas"
+  - alias: testnet
+    rpc: "https://api.testnet.iota.cafe"
+    graphql: "https://graphql.testnet.iota.cafe"
+    ws: ~
+    basic_auth: ~
+    faucet: "https://faucet.testnet.iota.cafe/v1/gas"
+  - alias: localnet
+    rpc: "http://127.0.0.1:9000"
+    graphql: "http://0.0.0.0:9125"
+    ws: ~
+    basic_auth: ~
+    faucet: "http://127.0.0.1:9123/v1/gas"
+active_env: mainnet
+active_address: "0xb5de96379d9eb22739de93b983de28b8c7cbbf8c8f0ddf1390c090f7f6eb74db"

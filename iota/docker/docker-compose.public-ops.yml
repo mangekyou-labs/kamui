@@ -1,0 +1,6 @@
+services:
+  kamui-iota-vrf-node:
+    environment:
+      OPS_HOST: ${OPS_HOST:-0.0.0.0}
+    ports:
+      - "${OPS_PORT:-9464}:${OPS_PORT:-9464}"
