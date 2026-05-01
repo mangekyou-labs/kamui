@@ -14,7 +14,7 @@ no-log-ix-name = []
 cpi = ["no-entrypoint"]
 default = []
 test-bpf = []
-mock = ["mangekyou", "rand", "solana-sdk", "solana-client", "solana-program-test", "hex", "serde_json", "tokio", "clap", "futures-util", "env_logger"]
+mock = ["mangekyou", "rand", "solana-sdk", "solana-client", "solana-program-test", "hex", "serde_json", "tokio", "clap", "futures-util", "env_logger", "aes-gcm", "argon2", "getrandom", "base64"]
 
 [dependencies]
 solana-program = { workspace = true }
@@ -23,7 +23,7 @@ thiserror = "1.0"
 spl-token = { version = "^6.0", features = ["no-entrypoint"] }
 spl-associated-token-account = { version = "^4.0", features = ["no-entrypoint"] }
 sha2 = "0.10"
-base64 = "0.21"
+base64 = { version = "0.21", optional = true }
 mangekyou = { path = "../mangekyou", optional = true }
 rand = { version = "0.8", optional = true }
 solana-sdk = { workspace = true, optional = true }
@@ -35,8 +35,11 @@ tokio = { version = "1.0", features = ["full"], optional = true }
 clap = { version = "4.2.1", features = ["derive"], optional = true }
 futures-util = { version = "0.3", optional = true }
 env_logger = { version = "0.10", optional = true }
+aes-gcm = { version = "0.10", optional = true }
+argon2 = { version = "0.5", optional = true }
 bincode = "1.3"
 futures = "0.3.31"
+getrandom = { version = "0.2", optional = true }
 
 [dev-dependencies]
 solana-client = { workspace = true }
@@ -113,5 +116,5 @@ curve25519-dalek = { git = "https://github.com/dalek-cryptography/curve25519-dal
 subtle = { git = "https://github.com/dalek-cryptography/subtle", rev = "b4b070c", version = "=2.4.1" }
 # Fix DER issues
 der = { git = "https://github.com/RustCrypto/formats", package = "der", version = "^0.7.0", rev = "510b74a" }
-# Fix zeroize version conflicts
-zeroize = { git = "https://github.com/iqlusioninc/crates", package = "zeroize", rev = "zeroize/v1.0.0" }
+# Fix zeroize version conflicts - need >=1.3.0 for mangekyou, >=1,<1.4 for curve25519-dalek
+zeroize = { git = "https://github.com/iqlusioninc/crates", package = "zeroize", rev = "zeroize/v1.3.0", version = "1.3.0" }

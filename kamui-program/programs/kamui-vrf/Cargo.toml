@@ -27,5 +27,6 @@ num-bigint = "0.4.4"
 thiserror = "1.0.48"
 rand = "0.8.5"
 hex = "0.4.3"
+mangekyou = { path = "../../../mangekyou" }
 
 [dev-dependencies] 

@@ -293,7 +293,7 @@ pub mod kamui_vrf {
     pub fn fulfill_randomness(
         ctx: Context<FulfillRandomness>,
         proof: Vec<u8>,
-        _public_key: Vec<u8>,
+        public_key: Vec<u8>,
         request_id: [u8; 32],
         pool_id: u8,
         request_index: u32,
@@ -301,39 +301,44 @@ pub mod kamui_vrf {
         let request = &mut ctx.accounts.request;
         let vrf_result = &mut ctx.accounts.vrf_result;
         let pool = &ctx.accounts.request_pool;
-        
+
         // Verify request is pending
         require!(
             request.status == RequestStatus::Pending,
             KamuiVrfError::RequestNotPending
         );
-        
+
         // Verify pool information
         require!(request.pool_id == pool_id, KamuiVrfError::InvalidPoolId);
         require!(request.request_index == request_index, KamuiVrfError::InvalidRequestIndex);
-        
-        // Verify proof (simplified verification)
-        if proof.is_empty() {
-            return Err(KamuiVrfError::ProofVerificationFailed.into());
-        }
-        
-        // Generate random value from request_id (for demonstration)
-        let random_value = keccak::hash(&request_id).to_bytes();
-        
+
+        // Parse and verify VRF proof cryptographically
+        let ecvrf_proof = ECVRFProof::from_bytes(&proof)
+            .map_err(|_| KamuiVrfError::ProofVerificationFailed)?;
+
+        let pk = ECVRFPublicKey::from_bytes(&public_key)
+            .map_err(|_| KamuiVrfError::ProofVerificationFailed)?;
+
+        // Compute expected output to verify proof matches request seed
+        let output: [u8; 64] = ecvrf_proof.to_hash();
+
+        ecvrf_proof.verify(&request.seed, &pk)
+            .map_err(|_| KamuiVrfError::ProofVerificationFailed)?;
+
         // Update request status
         request.status = RequestStatus::Fulfilled;
-        
-        // Store VRF result - convert [u8; 32] to [u8; 64] by padding with zeros
+
+        // Store VRF result
         let mut padded_random_value = [0u8; 64];
-        padded_random_value[..32].copy_from_slice(&random_value);
-        
-        vrf_result.randomness = vec![padded_random_value]; 
+        padded_random_value[..32].copy_from_slice(&output[0..32]);
+
+        vrf_result.randomness = vec![padded_random_value];
         vrf_result.proof = proof;
         vrf_result.proof_slot = Clock::get()?.slot;
         vrf_result.request_id = request_id;
-        
-        msg!("VRF request fulfilled with random value: {:?}", hex::encode(random_value));
-        
+
+        msg!("VRF request fulfilled with random value: {:?}", hex::encode(&output[0..32]));
+
         Ok(())
     }
 

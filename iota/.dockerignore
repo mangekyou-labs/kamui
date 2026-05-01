@@ -1,0 +1,7 @@
+fastcrypto/.git
+fastcrypto/target
+move/build
+node/.env
+node/dist
+node/node_modules
+node/state

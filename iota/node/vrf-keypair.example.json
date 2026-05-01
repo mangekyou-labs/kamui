@@ -1,0 +1,4 @@
+{
+  "secretKey": "replace-with-32-byte-hex-secret-key",
+  "publicKey": "replace-with-matching-32-byte-hex-public-key"
+}

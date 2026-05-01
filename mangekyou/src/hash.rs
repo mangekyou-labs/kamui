@@ -316,4 +316,3 @@ impl Debug for EllipticCurveMultisetHash {
         f.debug_struct("Accumulator").finish()
     }
 }
-

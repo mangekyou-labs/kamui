@@ -1,0 +1,20 @@
+# Docker Compose override for AWS deployments.
+#
+# Prerequisites on the EC2 instance:
+#   1. An IAM instance profile is attached to the EC2 with permission to read the Secrets Manager secrets.
+#   2. The AWS region is set so the CLI routes requests correctly.
+#
+# How to use — from the repo root:
+#   docker compose \
+#     -f iota/docker/docker-compose.yml \
+#     -f iota/docker/docker-compose.aws.yml \
+#     up --build -d
+#
+# This override:
+#   - Sets AWS_REGION so the AWS CLI in the container uses the correct region for Secrets Manager.
+#   - Does NOT publish ops endpoints (keep them private on a VPS/public subnet).
+#   - Assumes the instance profile provides credentials automatically (no AWS_ACCESS_KEY_ID etc. needed).
+services:
+  kamui-iota-vrf-node:
+    environment:
+      AWS_REGION: ${AWS_REGION:-us-east-1}

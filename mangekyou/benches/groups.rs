@@ -10,8 +10,7 @@ mod group_benches {
     use mangekyou::groups::multiplier::ScalarMultiplier;
     use mangekyou::groups::ristretto255::RistrettoPoint;
     use mangekyou::groups::{
-        FromTrustedByteArray, GroupElement, HashToGroupElement, MultiScalarMul, Pairing,
-        Scalar,
+        FromTrustedByteArray, GroupElement, HashToGroupElement, MultiScalarMul, Pairing, Scalar,
     };
     use mangekyou::serde_helpers::ToFromByteArray;
     use rand::thread_rng;

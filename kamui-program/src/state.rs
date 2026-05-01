@@ -1,15 +1,16 @@
 use {
     borsh::{BorshDeserialize, BorshSerialize},
-    solana_program::{
-        pubkey::Pubkey,
-        clock::Clock,
-        sysvar::Sysvar,
-        keccak::hash,
-    },
+    solana_program::{keccak::hashv, pubkey::Pubkey},
     std::collections::BTreeMap,
 };
 
-/// Constants for request validation
+pub const SUBSCRIPTION_DISCRIMINATOR: [u8; 8] = *b"SUBSCRIP";
+pub const REQUEST_POOL_DISCRIMINATOR: [u8; 8] = [80, 79, 79, 76, 0, 0, 0, 0];
+pub const REQUEST_DISCRIMINATOR: [u8; 8] = [82, 69, 81, 85, 69, 83, 84, 0];
+pub const RESULT_DISCRIMINATOR: [u8; 8] = [82, 69, 83, 85, 76, 84, 0, 0];
+pub const REGISTRY_DISCRIMINATOR: [u8; 8] = *b"REGISTRY";
+pub const ORACLE_DISCRIMINATOR: [u8; 8] = [79, 82, 65, 67, 76, 69, 0, 0];
+
 pub const MINIMUM_REQUEST_CONFIRMATIONS: u8 = 1;
 pub const MAXIMUM_REQUEST_CONFIRMATIONS: u8 = 255;
 pub const MINIMUM_CALLBACK_GAS_LIMIT: u64 = 10_000;
@@ -17,10 +18,15 @@ pub const MAXIMUM_CALLBACK_GAS_LIMIT: u64 = 1_000_000;
 pub const MAXIMUM_RANDOM_WORDS: u32 = 100;
 pub const MAX_REQUESTS_PER_SUBSCRIPTION: u16 = 100;
 pub const MAX_ACTIVE_ORACLES: u16 = 10;
-pub const REQUEST_EXPIRY_SLOTS: u64 = 3 * 60 * 60; // 3 hours in slots
-pub const ORACLE_ROTATION_FREQUENCY: u64 = 500; // Rotate oracles every 500 slots
+pub const MAX_CALLBACK_DATA_LEN: usize = 1024;
+pub const MAX_PROOF_LEN: usize = 512;
+pub const REQUEST_EXPIRY_SLOTS: u64 = 3 * 60 * 60;
+pub const ORACLE_ROTATION_FREQUENCY: u64 = 500;
 
-#[derive(BorshSerialize, BorshDeserialize, Debug, PartialEq, Clone)]
+pub const REQUEST_SUMMARY_SERIALIZED_SIZE: usize = 32 + 32 + 8 + 1 + 8 + 8;
+pub const ENHANCED_ORACLE_SERIALIZED_SIZE: usize = 32 + 32 + 8 + 2 + 8 + 1 + 8 + 8;
+
+#[derive(BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum RequestStatus {
     Pending,
     Fulfilled,
@@ -28,198 +34,194 @@ pub enum RequestStatus {
     Expired,
 }
 
-/// Enhanced Subscription with built-in request tracking
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct EnhancedSubscription {
-    /// The owner of this subscription
     pub owner: Pubkey,
-    /// Current balance for VRF requests
     pub balance: u64,
-    /// Minimum balance required for requests
     pub min_balance: u64,
-    /// Number of confirmations required before generating VRF proof
     pub confirmations: u8,
-    /// Number of active requests
     pub active_requests: u16,
-    /// Maximum allowed concurrent requests
     pub max_requests: u16,
-    /// Current request counter (for generating unique IDs)
     pub request_counter: u64,
-    /// Truncated hashes of active request keys for quick lookup
     pub request_keys: Vec<[u8; 16]>,
-    /// Associated request pool IDs
     pub pool_ids: Vec<u8>,
 }
 
-/// Request Pool - organized by subscription
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct RequestPool {
-    /// The subscription this pool belongs to
     pub subscription: Pubkey,
-    /// Pool identifier
     pub pool_id: u8,
-    /// Current number of requests in the pool
     pub request_count: u32,
-    /// Maximum capacity of this pool
     pub max_size: u32,
-    /// Map of request index to request data
     pub requests: BTreeMap<u32, RequestSummary>,
-    /// Last slot this pool was processed
     pub last_processed_slot: u64,
 }
 
-/// Compact request summary for storage in pools
 #[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct RequestSummary {
-    /// The requestor's program ID
     pub requester: Pubkey,
-    /// Hash of the original seed (for verification)
     pub seed_hash: [u8; 32],
-    /// Timestamp of request creation
     pub timestamp: i64,
-    /// Current status of the request
     pub status: RequestStatus,
-    /// Block height when request was made
     pub request_slot: u64,
-    /// Callback gas limit
     pub callback_gas_limit: u64,
 }
 
-/// Detailed request data for processing
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct RandomnessRequest {
-    /// The subscription this request belongs to
     pub subscription: Pubkey,
-    /// The seed used for randomness
     pub seed: [u8; 32],
-    /// The requester's program ID that will receive the callback
     pub requester: Pubkey,
-    /// The callback function data
     pub callback_data: Vec<u8>,
-    /// Block number when request was made
     pub request_slot: u64,
-    /// Status of the request
     pub status: RequestStatus,
-    /// Number of random words requested
     pub num_words: u32,
-    /// Maximum compute units for callback
     pub callback_gas_limit: u64,
-    /// Request pool ID
     pub pool_id: u8,
-    /// Request index in pool
     pub request_index: u32,
-    /// Unique request identifier
     pub request_id: [u8; 32],
 }
 
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct VrfResult {
-    /// The randomness outputs
     pub randomness: Vec<[u8; 64]>,
-    /// The VRF proof
     pub proof: Vec<u8>,
-    /// Block number when proof was generated
     pub proof_slot: u64,
-    /// Request ID this result is for
     pub request_id: [u8; 32],
 }
 
-/// Oracle registry for managing multiple oracles
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct OracleRegistry {
-    /// Admin authority
     pub admin: Pubkey,
-    /// Current number of active oracles
     pub oracle_count: u16,
-    /// Minimum stake amount required
     pub min_stake: u64,
-    /// Slots between oracle rotation
     pub rotation_frequency: u64,
-    /// Last slot when oracles were rotated
     pub last_rotation: u64,
-    /// List of oracle public keys
     pub oracles: Vec<Pubkey>,
 }
 
-/// Enhanced oracle with stake and reputation
-#[derive(BorshSerialize, BorshDeserialize, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
 pub struct EnhancedOracle {
-    /// The oracle's authority
     pub authority: Pubkey,
-    /// The oracle's VRF public key
     pub vrf_key: [u8; 32],
-    /// Staked amount
     pub stake_amount: u64,
-    /// Reputation score (successful fulfillments)
     pub reputation: u16,
-    /// Last active slot
     pub last_active: u64,
-    /// Whether the oracle is active
     pub is_active: bool,
-    /// Number of successful fulfillments
     pub fulfillment_count: u64,
-    /// Number of failed fulfillments
     pub failure_count: u64,
 }
 
+impl EnhancedSubscription {
+    pub fn space(max_requests: u16, max_pools: usize) -> usize {
+        8 + 32 + 8 + 8 + 1 + 2 + 2 + 8 + (4 + (max_requests as usize * 16)) + (4 + max_pools)
+    }
+
+    pub fn truncated_request_key(request_id: &[u8; 32]) -> [u8; 16] {
+        let mut key = [0u8; 16];
+        key.copy_from_slice(&request_id[..16]);
+        key
+    }
+
+    pub fn track_request(&mut self, request_id: &[u8; 32]) {
+        self.request_keys
+            .push(Self::truncated_request_key(request_id));
+        self.request_counter = self.request_counter.saturating_add(1);
+    }
+
+    pub fn untrack_request(&mut self, request_id: &[u8; 32]) {
+        let key = Self::truncated_request_key(request_id);
+        if let Some(position) = self.request_keys.iter().position(|k| *k == key) {
+            self.request_keys.remove(position);
+        }
+    }
+}
+
 impl RequestPool {
-    /// Generate a unique request ID
+    pub fn space(max_size: u32) -> usize {
+        let entries = max_size as usize;
+        let map_space = 4 + entries * (4 + REQUEST_SUMMARY_SERIALIZED_SIZE);
+        8 + 32 + 1 + 4 + 4 + map_space + 8
+    }
+
     pub fn generate_request_id(
         seed: &[u8; 32],
         requester: &Pubkey,
         subscription: &Pubkey,
         pool_id: u8,
         request_index: u32,
+        current_slot: u64,
+        timestamp: i64,
     ) -> [u8; 32] {
-        let current_slot = Clock::get().unwrap().slot;
-        let timestamp = Clock::get().unwrap().unix_timestamp;
-        
-        let mut data_to_hash = Vec::with_capacity(32 + 32 + 32 + 8 + 8 + 1 + 4);
-        data_to_hash.extend_from_slice(seed);
-        data_to_hash.extend_from_slice(&requester.to_bytes());
-        data_to_hash.extend_from_slice(&subscription.to_bytes());
-        data_to_hash.extend_from_slice(&current_slot.to_le_bytes());
-        data_to_hash.extend_from_slice(&timestamp.to_le_bytes());
-        data_to_hash.push(pool_id);
-        data_to_hash.extend_from_slice(&request_index.to_le_bytes());
-        
-        hash(&data_to_hash).to_bytes()
+        hashv(&[
+            seed,
+            &requester.to_bytes(),
+            &subscription.to_bytes(),
+            &current_slot.to_le_bytes(),
+            &timestamp.to_le_bytes(),
+            &[pool_id],
+            &request_index.to_le_bytes(),
+        ])
+        .to_bytes()
     }
-    
-    /// Check if a request is expired
+
     pub fn is_request_expired(request_slot: u64, current_slot: u64) -> bool {
         current_slot.saturating_sub(request_slot) > REQUEST_EXPIRY_SLOTS
     }
-    
-    /// Get the next available request index
-    pub fn next_request_index(&self) -> u32 {
-        if self.requests.is_empty() {
-            0
-        } else {
-            // Get the highest key and add 1
-            self.requests.keys().last().unwrap() + 1
-        }
+
+    pub fn next_request_index(&self) -> Option<u32> {
+        self.requests
+            .keys()
+            .next_back()
+            .copied()
+            .map_or(Some(0), |last| last.checked_add(1))
     }
-    
-    /// Remove expired requests and return count of removed
-    pub fn clean_expired_requests(&mut self) -> u32 {
-        let current_slot = Clock::get().unwrap().slot;
-        let expired_keys: Vec<u32> = self.requests.iter()
-            .filter(|(_, request)| {
-                request.status == RequestStatus::Pending && 
-                Self::is_request_expired(request.request_slot, current_slot)
+
+    pub fn collect_expired_pending(&self, current_slot: u64) -> Vec<u32> {
+        self.requests
+            .iter()
+            .filter_map(|(index, request)| {
+                (request.status == RequestStatus::Pending
+                    && Self::is_request_expired(request.request_slot, current_slot))
+                .then_some(*index)
             })
-            .map(|(k, _)| *k)
-            .collect();
-            
-        let count = expired_keys.len() as u32;
-        
-        for key in expired_keys {
-            if let Some(mut request) = self.requests.get_mut(&key) {
-                request.status = RequestStatus::Expired;
+            .collect()
+    }
+
+    pub fn mark_expired(&mut self, request_indexes: &[u32]) -> u32 {
+        let mut updated = 0u32;
+        for index in request_indexes {
+            if let Some(request) = self.requests.get_mut(index) {
+                if request.status == RequestStatus::Pending {
+                    request.status = RequestStatus::Expired;
+                    updated = updated.saturating_add(1);
+                }
             }
         }
-        
-        count
+        updated
     }
-} 
+}
+
+impl RandomnessRequest {
+    pub fn space(callback_data_len: usize) -> usize {
+        8 + 32 + 32 + 32 + (4 + callback_data_len) + 8 + 1 + 4 + 8 + 1 + 4 + 32
+    }
+}
+
+impl VrfResult {
+    pub fn space(num_words: usize, proof_len: usize) -> usize {
+        8 + (4 + (num_words * 64)) + (4 + proof_len) + 8 + 32
+    }
+}
+
+impl OracleRegistry {
+    pub fn space(max_oracles: usize) -> usize {
+        8 + 32 + 2 + 8 + 8 + 8 + (4 + max_oracles * 32)
+    }
+}
+
+impl EnhancedOracle {
+    pub fn space() -> usize {
+        8 + ENHANCED_ORACLE_SERIALIZED_SIZE
+    }
+}

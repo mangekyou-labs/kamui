@@ -1,7 +1,4 @@
-use {
-    kamui_program::mock_prover::MockProver,
-    clap::Parser,
-};
+use {clap::Parser, kamui_program::mock_prover::MockProver};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -19,9 +16,9 @@ struct Args {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let mut mock_prover = MockProver::new().await;
-    
+
     println!("Mock prover initialized with URL: {}", args.url);
     println!("Using keypair: {}", args.keypair);
-    
+
     Ok(())
-} 
+}
