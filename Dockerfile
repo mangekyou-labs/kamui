@@ -1,26 +1,42 @@
-FROM ubuntu:20.04
+# syntax=docker/dockerfile:1.7
+
+# Build the Linux AMD64 GNU ecvrf-cli binary and export it back to this folder:
+#
+#   docker buildx build --platform linux/amd64 --target artifact --output type=local,dest=. .
+#
+# The command above writes ./ecvrf-cli, which standalone-vrf-server.js checks first.
+
+ARG RUST_VERSION=1
+
+FROM --platform=linux/amd64 rust:${RUST_VERSION}-bookworm AS builder
 
 RUN apt-get update && \
-    apt-get install -y curl build-essential pkg-config libssl-dev libudev-dev \
-    git python3 sudo nodejs npm
-
-# Install Rust
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-# Install Solana 1.18.1
-RUN sh -c "$(curl -sSfL https://releases.solana.com/v1.18.1/install)" && \
-    /root/.local/share/solana/install/active_release/bin/solana --version
-
-# Install Anchor 0.29.0
-RUN cargo install --git https://github.com/coral-xyz/anchor avm --locked && \
-    avm install 0.29.0 && \
-    avm use 0.29.0
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        git \
+        pkg-config \
+        build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the project
-COPY . .
+COPY Cargo.toml Cargo.lock ./
+COPY mangekyou ./mangekyou
+COPY mangekyou-cli ./mangekyou-cli
+COPY mangekyou-derive ./mangekyou-derive
 
-# Run the test
-CMD cd kamui-program && npm install && anchor test 
+ENV CARGO_TARGET_DIR=/app/target
+
+RUN cargo build \
+    --locked \
+    --release \
+    --target x86_64-unknown-linux-gnu \
+    --package mangekyou-cli \
+    --bin ecvrf-cli
+
+RUN mkdir -p /out && \
+    cp /app/target/x86_64-unknown-linux-gnu/release/ecvrf-cli /out/ecvrf-cli && \
+    chmod 0755 /out/ecvrf-cli
+
+FROM scratch AS artifact
+COPY --from=builder /out/ecvrf-cli /ecvrf-cli
