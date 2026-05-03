@@ -1,0 +1,11 @@
+*
+
+!Dockerfile
+!Cargo.toml
+!Cargo.lock
+!mangekyou/
+!mangekyou/**
+!mangekyou-cli/
+!mangekyou-cli/**
+!mangekyou-derive/
+!mangekyou-derive/**

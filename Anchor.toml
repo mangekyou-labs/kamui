@@ -1,31 +1,47 @@
 [toolchain]
+anchor_version = "0.31.1"
+solana_version = "2.1.21"
 
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
-[programs.localnet]
-kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
-
 [programs.devnet]
-kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+kamui_vrf = "8xBh8yMwNJG42fcmj1MvZRrSV3w8NwH3J9c3xPjF5Vgd"
+kamui_vrf_consumer = "DH3mVRXoyCUmmDmcf9a7AkEU99UEomvg2jq4X2boga6e"
 
-[programs.mainnet]
-kamui_layerzero = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
+[programs.localnet]
+kamui_vrf = "4zxDQnSVK6XPTERb8kY8b7EQsHWbwrRFfaDunF9Ryjg1"
+kamui_vrf_consumer = "4qqRVYJAeBynm2yTydBkTJ9wVay3CrUfZ7gf9chtWS5Y"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
-wallet = "~/.config/solana/id.json"
+cluster = "devnet"
+wallet = "./keypairs/keypair.json"
+
+[workspace]
+members = ["programs/kamui-vrf", "programs/kamui-vrf-consumer"]
 
 [scripts]
-test = "find . -name '*.ts' ! -path './node_modules/*' -exec npx ts-node {} \\;"
+test = "cd tests/anchor && yarn run ts-mocha --require ts-node/register --require tsconfig-paths/register -p ./tsconfig.json -t 1000000 tests/anchor/tests/*.ts"
 
 [test]
-startup_wait = 5000
+startup_wait = 10000
+shutdown_wait = 2000
+upgradeable = false
 
 [[test.genesis]]
-address = "9fFiUggC3G2R1VH9YYA5WgaBvESNJHWgK9Hndcp7x3F"
-program = "target/deploy/kamui_layerzero.so" 
+address = "6k1Lmt37b5QQAhPz5YXbTPoHCSCDbSEeNAC96nWZn85a"
+program = "target/deploy/kamui_vrf.so"
+
+[[test.genesis]]
+address = "2Pd6R21gGNJgrfxHQPegcXgwmSd5MY1uHBYrNAtYgPbE"
+program = "target/deploy/kamui_vrf_consumer.so"
+
+[test.validator]
+bind_address = "0.0.0.0"
+url = "https://api.devnet.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
